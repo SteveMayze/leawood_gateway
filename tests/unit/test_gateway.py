@@ -3,7 +3,7 @@
 from gateway.domain.model import Message, Gateway
 from gateway.services.message_bus import MessageBus
 
-def test_accept_from_a_known_node():
+def test_recevie_message():
 
     message = Message('address')
     message_bus = MessageBus()
@@ -13,7 +13,7 @@ def test_accept_from_a_known_node():
     # Existing node
     # Push the message to the MQTT queue
 
-    assert gateway.message_bus.pop(0) == message
+    assert gateway.message_bus.pop() == message
 
     
 
