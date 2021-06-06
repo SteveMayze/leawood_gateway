@@ -13,8 +13,14 @@ python3.9 -m venv .venv
 
 ```
 pip intall -r requirements.txt
+pip install -e src
 ```
 
+# Running the tests
+
+```
+pytest
+```
 
 # Use Cases
 
@@ -29,10 +35,9 @@ The purpose of these independent threads is to ensure that the thread
 # Message Handler
 The message handler is the thread that opens the connection to the serial port that is connected to the radio unit. To avoid clashes, there is only one thread that will have access to the port. It is also important that when receiving or sending messages to and from the radio unit that the connection is as short as possible. There fore where possible a message bus will be used. At this stage, MQTT is the choice for the message bus, though it might eventuate that this is excessive.
 
-## Request Data
 The message handler will be running in an infinite loop. Its time will be divided between
 
-1. Sending out requests for information
+1. Receving messages from the field
 2. Checking the application message queue for further instructions
 3. Pausing in an idle state
 
@@ -40,7 +45,13 @@ In the idle state, the message handler will be waiting for messages 
 
 There needs to be a management check in the list of associated nodes to see when the last time a node was in contact. If a threshold is exceeded, then the application is informed of a potential field problem.
 
+## Node Available
+When the gateway receives a Node Available message, this idicates that a sensor node has woken and is available to receive commands. This can be new configuration information from the application or it can be a request tha the node should provide its current readings.
+
+The node available message will need to be checked against a list of known nodes so that the gateway can deal with a newly added node.
+
 ## New Node
+If the node is not currently registered in the local list, then a request to the application will be made. If this is a new node, then the new entries will be made and the node added to the local list. It could well be that this node has moved from one gateway to another. In this case no new node is needed to be registered buy the allocated gateway should change.
 
 ## Node Removed
 
