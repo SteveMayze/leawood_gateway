@@ -1,6 +1,6 @@
 
 from leawood.domain.model import Message
-from leawood.services.modules import Gateway, Modem
+from leawood.domain.hw_modules import Gateway, Modem
 from leawood.services.messagebus import MessageBus
 from leawood.config import Config
 
