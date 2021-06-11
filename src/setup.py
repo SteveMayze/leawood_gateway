@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name="gateway",
+    name="leawood",
     version="0.1",
-    packages=["gateway"],
+    packages=["leawood"],
 )

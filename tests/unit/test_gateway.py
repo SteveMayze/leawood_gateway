@@ -1,14 +1,28 @@
 
-## import gateway
-from gateway.domain.model import Message, Gateway
-from gateway.services.message_bus import MessageBus
+from leawood.domain.model import Message
+from leawood.services.modules import Gateway, Modem
+from leawood.services.messagebus import MessageBus
+from leawood.config import Config
 
-def test_recevie_message():
+import pytest
+
+
+@pytest.fixture
+def config():
+    args = ["--serial-port", "COM1", "--baud", "9600", "--sleeptime", "0"]
+    return Config(args)
+
+
+@pytest.fixture
+def modem() -> Modem:
+    return 
+
+def test_receive_message(config, modem):
 
     message = Message('address')
     message_bus = MessageBus()
-    gateway = Gateway(message_bus)
-    gateway.message_received_callback(message)
+    gateway = Gateway(message_bus, modem)
+    gateway.message_received_callback(message )
 
     # Existing node
     # Push the message to the MQTT queue

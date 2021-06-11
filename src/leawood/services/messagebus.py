@@ -1,4 +1,5 @@
 import queue
+from leawood.domain.model import Message
 
 class MessageBus:
     def __init__(self):

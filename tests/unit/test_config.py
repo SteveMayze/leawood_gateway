@@ -1,4 +1,4 @@
-from gateway.config import Config
+from leawood.config import Config
 
 class TestCase:
 
