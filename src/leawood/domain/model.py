@@ -3,5 +3,6 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Message():
-    address: str
+    addr64bit: str
+    operation: str
     payload: str
