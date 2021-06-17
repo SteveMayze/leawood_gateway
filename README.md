@@ -22,6 +22,11 @@ pip install -e src
 pytest
 ```
 
+Running the tests with logging
+```
+pytest -v -s --log-cli-level INFO
+```
+
 # Use Cases
 
 The purpose of the Hub is to act as a gateway between the radio units (currently XBee) and the application (i.e. database). Once the process starts up it will launch three other independent threads 

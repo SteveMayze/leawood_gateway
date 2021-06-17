@@ -3,9 +3,9 @@ from leawood.domain.model import Message
 import abc
 import logging 
 from typing import Final
+from leawood.services import mqtt
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 class Modem(abc.ABC):
     def __init__(self):
@@ -41,10 +41,12 @@ class Gateway():
     READY: Final = 'READY'
     DATA_REQ: Final = 'DATAREQ'
     DATA: Final = 'DATA'
+    DATA_ACK: Final = 'DATAACK'
 
-    def __init__(self,  message_bus: MessageBus, modem: Modem):
+    def __init__(self,  message_bus: MessageBus, modem: Modem, mqtt: mqtt.MQTT):
         self.message_bus = message_bus
         self.modem = modem
+        self.mqtt = mqtt
         self.nodes = []
         modem.register_receive_callback(self._message_received_callback)
         message_bus.register_message_callback(self._event_received_callback)
@@ -62,4 +64,10 @@ class Gateway():
         if message.operation == Gateway.READY:
             logger.info('Operation READY, sending DATA_REQ')
             message = Message(message.addr64bit, Gateway.DATA_REQ, None)
+            self.modem.send_message(message)
+        elif message.operation == Gateway.DATA:
+            logger.info('Operation DATA, sending DATA_ACK')
+            ## Post the data to the MQTT
+            mqtt.publish(self.mqtt, message)
+            message = Message(message.addr64bit, Gateway.DATA_ACK, None)
             self.modem.send_message(message)

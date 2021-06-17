@@ -6,19 +6,6 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-def activate(message_bus):
-    logger.info(f'Starting the message bus')
-    if message_bus.event_callback == None:
-        raise MessageBusError('The event bus must have a callback defined.')
-    message_bus.listener_thread = Thread(target=message_bus._listener)
-    message_bus.listener_thread.start()
-
-def shutdown(message_bus):
-    logger.info(f'Shutting down the message bus')
-    message_bus.terminate()
-    message_bus.listener_thread.join()
 
 
 class MessageBusError(Exception):
@@ -68,3 +55,17 @@ class MessageBus:
                 logger.info(f'Calling the callback {self.event_callback}')
                 self.event_callback(item)
                 self.message_queue.task_done()
+
+
+def activate(message_bus: MessageBus):
+    logger.info(f'Starting the message bus')
+    if message_bus.event_callback == None:
+        raise MessageBusError('The event bus must have a callback defined.')
+    message_bus.listener_thread = Thread(target=message_bus._listener)
+    message_bus.listener_thread.start()
+
+def shutdown(message_bus: MessageBus):
+    logger.info(f'Shutting down the message bus')
+    message_bus.terminate()
+    message_bus.listener_thread.join()
+

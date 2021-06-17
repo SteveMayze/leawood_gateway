@@ -1,6 +1,10 @@
 from digi.xbee import devices
 from leawood.config import Config
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class AbstractSensor:
 
