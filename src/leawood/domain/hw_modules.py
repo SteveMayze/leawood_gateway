@@ -1,9 +1,7 @@
 from leawood.services.messagebus import MessageBus
-from leawood.domain.model import Message
+from leawood.domain.model import Message, Data, Ready, DataReq, DataAck
 import abc
 import logging 
-from typing import Final
-from leawood.services import mqtt
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +36,9 @@ class Sensor():
 
 class Gateway():
 
-    READY: Final = 'READY'
-    DATA_REQ: Final = 'DATAREQ'
-    DATA: Final = 'DATA'
-    DATA_ACK: Final = 'DATAACK'
-
-    def __init__(self,  message_bus: MessageBus, modem: Modem, mqtt: mqtt.MQTT):
+    def __init__(self,  message_bus: MessageBus, modem: Modem):
         self.message_bus = message_bus
         self.modem = modem
-        self.mqtt = mqtt
         self.nodes = []
         modem.register_receive_callback(self._message_received_callback)
         message_bus.register_message_callback(self._event_received_callback)
@@ -55,19 +47,26 @@ class Gateway():
         logger.info(f'sending message {message}')
         self.modem.send_message(message)
 
+    # Recevies a message from a modem and pushes this directly
+    # to the message bus to minimise the time spent.
     def _message_received_callback(self, message: Message):
         logger.info(f'received message {message}')
         self.message_bus.push(message)
 
+    # An asynchronous call back that will andle the messages
+    # from the modem
     def _event_received_callback(self, message: Message):
         logger.info(f'received event: {message}')
-        if message.operation == Gateway.READY:
+        if message.operation == Ready.operation:
             logger.info('Operation READY, sending DATA_REQ')
-            message = Message(message.addr64bit, Gateway.DATA_REQ, None)
-            self.modem.send_message(message)
-        elif message.operation == Gateway.DATA:
+            message = DataReq(message.addr64bit, None)
+            self.send_message(message)
+        elif message.operation == Data.operation:
             logger.info('Operation DATA, sending DATA_ACK')
-            ## Post the data to the MQTT
-            mqtt.publish(self.mqtt, message)
-            message = Message(message.addr64bit, Gateway.DATA_ACK, None)
+            ## Post the data to the repository
+
+            ## call on a REST service layer to post the
+            ## message
+
+            message = DataAck(message.addr64bit,None)
             self.modem.send_message(message)

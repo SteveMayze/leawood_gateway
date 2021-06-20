@@ -1,8 +1,8 @@
 
-from leawood.domain.model import Message
+from leawood.domain.model import Message, Data, Ready, DataReq, DataAck
 from leawood.domain.hw_modules import Gateway, Modem
-from leawood.services.messagebus import MessageBus
-from leawood.services import messagebus, mqtt
+from leawood.services.messagebus import LocalMessageBus
+from leawood.services import messagebus
 from leawood.config import Config
 import logging 
 import pytest
@@ -13,14 +13,6 @@ import time
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-class FakeMQTT(mqtt.MQTT):
-    def __init__(self) -> None:
-        self.spy = {}
-
-
-    def publish(self, message: Message):
-        logger.info(f'publish message: {message}')
-        self.spy["PUBLISH"] = message
 
 
 class FakeModem(Modem):
@@ -79,10 +71,9 @@ def wait_for_runnning_state(worker, state):
 
 
 def test_receive_message(config, modem):
-    message = Message('00001', 'DATA', '{"bus-voltage": 10.5}')
-    mqtt_bus = FakeMQTT()
-    message_bus = MessageBus()
-    gateway = Gateway(message_bus, modem, mqtt_bus)
+    message = Data('00001', '{"bus-voltage": 10.5}')
+    message_bus = LocalMessageBus()
+    gateway = Gateway(message_bus, modem)
 
     modem.receive_message(message)
 
@@ -93,15 +84,14 @@ def test_receive_message(config, modem):
 
 def test_receive_ready_message(config, modem):
 
-        message_bus = MessageBus()
-        mqtt_bus = FakeMQTT()
-        gateway = Gateway(message_bus, modem, mqtt_bus)
+        message_bus = LocalMessageBus()
+        gateway = Gateway(message_bus, modem)
 
         messagebus.activate(message_bus)
         logger.info(f'Waiting for the message bus to start')
         wait_for_runnning_state(message_bus, True)
 
-        message = Message('00001', Gateway.READY, None)
+        message = Ready('00001', None)
         modem.receive_message(message)
         wait_for_empty_queue(message_bus, True)
 
@@ -109,7 +99,7 @@ def test_receive_ready_message(config, modem):
         # This will result in a 'DATA_REQ' being sent out to
         # the sensor.
 
-        message = Message('00001', Gateway.DATA_REQ, None)
+        message = DataReq('00001', None)
         assert modem.spy['00001'] == message
 
         logger.info(f'Waiting for the message bus to shut down')
@@ -119,24 +109,23 @@ def test_receive_ready_message(config, modem):
 
 def test_receive_data_message(config, modem):
 
-        message_bus = MessageBus()
-        mqtt_bus = FakeMQTT()
-        gateway = Gateway(message_bus, modem, mqtt_bus)
+        message_bus = LocalMessageBus()
+        gateway = Gateway(message_bus, modem)
 
         messagebus.activate(message_bus)
         logger.info(f'Waiting for the message bus to start')
         wait_for_runnning_state(message_bus, True)
 
         payload = '{"bus-voltage": 10.5}'
-        rcv_message = Message('00001', Gateway.DATA, payload)
+        rcv_message = Data('00001', payload)
         modem.receive_message(rcv_message)
         wait_for_empty_queue(message_bus, True)
 
-        # The hub receives a READY message from a field device
-        # This will result in a 'DATA_REQ' being sent out to
+        # The hub receives a DATA message from a field device
+        # This will result in a 'DATA_ACK' being sent out to
         # the sensor.
 
-        message = Message('00001', Gateway.DATA_ACK, None)
+        message = DataAck('00001',None)
         assert modem.spy['00001'] == message
 
 
@@ -144,6 +133,10 @@ def test_receive_data_message(config, modem):
         messagebus.shutdown(message_bus)
         wait_for_runnning_state(message_bus, False)
 
-        assert mqtt_bus.spy['PUBLISH'] == rcv_message
+        # Further to that, the gateway will publish the message
+        # to the MQTT message bus to be picked up later by 
+        # a listener the then post this using R£ST to the DB.
+
+        ## assert mqtt_bus.spy['PUBLISH'] == rcv_message
 
 
