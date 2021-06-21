@@ -5,6 +5,24 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+
+
+def handle_ready(message: Message):
+    logger.info('Operation READY, sending DATA_REQ')
+    newMessage = DataReq( message.modem, message.addr64bit, None)
+    message.modem.send_message(newMessage)
+
+def handle_data(message: Message):
+    logger.info('Operation DATA, sending DATA_ACK')
+    ## Post the data to the repository
+
+    ## call on a REST service layer to post the
+    ## message
+
+    newMessage = DataAck( message.modem, message.addr64bit,None)
+    message.modem.send_message(newMessage)
+
 class Modem(abc.ABC):
     def __init__(self):
         pass
@@ -41,7 +59,7 @@ class Gateway():
         self.modem = modem
         self.nodes = []
         modem.register_receive_callback(self._message_received_callback)
-        message_bus.register_message_callback(self._event_received_callback)
+        message_bus.register_message_handlers(MESSAGE_HANDLERS)
 
     def send_message(self, message: Message):
         logger.info(f'sending message {message}')
@@ -53,20 +71,8 @@ class Gateway():
         logger.info(f'received message {message}')
         self.message_bus.push(message)
 
-    # An asynchronous call back that will andle the messages
-    # from the modem
-    def _event_received_callback(self, message: Message):
-        logger.info(f'received event: {message}')
-        if message.operation == Ready.operation:
-            logger.info('Operation READY, sending DATA_REQ')
-            message = DataReq(message.addr64bit, None)
-            self.send_message(message)
-        elif message.operation == Data.operation:
-            logger.info('Operation DATA, sending DATA_ACK')
-            ## Post the data to the repository
+MESSAGE_HANDLERS={
+    Ready: handle_ready,
+    Data: handle_data
 
-            ## call on a REST service layer to post the
-            ## message
-
-            message = DataAck(message.addr64bit,None)
-            self.modem.send_message(message)
+}

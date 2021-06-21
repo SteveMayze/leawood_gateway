@@ -2,55 +2,35 @@
 from dataclasses import dataclass
 from typing import Final
 
-
 class Message:
+    pass
+
+@dataclass
+class Ready(Message):
+    modem: object
     addr64bit: str
     payload: str
-    operation: str
-
-    def __init__(self, addr64bit: str, operation: str, payload: str) -> None:
-        self.addr64bit = addr64bit
-        self.payload = payload
-        self.operation = operation
-
-    def __eq__(self, o: object) -> bool:
-        if o == None: return False
-        if ( isinstance(o, Message)):
-            return self.operation == o.operation and self.addr64bit == o.addr64bit and self.payload == o.payload
-        return False
-
-    def __str__(self) -> str:
-        return f'{self.operation}@{self.addr64bit}: {self.payload}'
-
-
-
-class Ready(Message):
-
     operation: Final = 'READY'
 
-    def __init__(self, addr64bit: str, payload: str) -> None:
-        super().__init__(addr64bit, self.operation, payload)
 
-
+@dataclass
 class DataReq(Message):
-
+    modem: object
+    addr64bit: str
+    payload: str
     operation: Final = 'DATAREQ'
 
-    def __init__(self, addr64bit: str, payload: str) -> None:
-        super().__init__(addr64bit, self.operation, payload)
-
-
+@dataclass
 class Data(Message):
-
+    modem: object
+    addr64bit: str
+    payload: str
     operation: Final = 'DATA'
 
-    def __init__(self, addr64bit: str, payload: str) -> None:
-        super().__init__(addr64bit, self.operation, payload)
 
-
+@dataclass
 class DataAck(Message):
-
+    modem: object
+    addr64bit: str
+    payload: str
     operation: Final = 'DATAACK'
-
-    def __init__(self, addr64bit: str, payload: str) -> None:
-        super().__init__(addr64bit, self.operation, payload)

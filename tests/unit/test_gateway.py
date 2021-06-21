@@ -71,9 +71,9 @@ def wait_for_runnning_state(worker, state):
 
 
 def test_receive_message(config, modem):
-    message = Data('00001', '{"bus-voltage": 10.5}')
     message_bus = LocalMessageBus()
     gateway = Gateway(message_bus, modem)
+    message = Data(modem, '00001', '{"bus-voltage": 10.5}')
 
     modem.receive_message(message)
 
@@ -91,7 +91,7 @@ def test_receive_ready_message(config, modem):
         logger.info(f'Waiting for the message bus to start')
         wait_for_runnning_state(message_bus, True)
 
-        message = Ready('00001', None)
+        message = Ready(modem, '00001', None)
         modem.receive_message(message)
         wait_for_empty_queue(message_bus, True)
 
@@ -99,7 +99,7 @@ def test_receive_ready_message(config, modem):
         # This will result in a 'DATA_REQ' being sent out to
         # the sensor.
 
-        message = DataReq('00001', None)
+        message = DataReq(modem, '00001', None)
         assert modem.spy['00001'] == message
 
         logger.info(f'Waiting for the message bus to shut down')
@@ -117,7 +117,7 @@ def test_receive_data_message(config, modem):
         wait_for_runnning_state(message_bus, True)
 
         payload = '{"bus-voltage": 10.5}'
-        rcv_message = Data('00001', payload)
+        rcv_message = Data(modem, '00001', payload)
         modem.receive_message(rcv_message)
         wait_for_empty_queue(message_bus, True)
 
@@ -125,7 +125,7 @@ def test_receive_data_message(config, modem):
         # This will result in a 'DATA_ACK' being sent out to
         # the sensor.
 
-        message = DataAck('00001',None)
+        message = DataAck(modem, '00001',None)
         assert modem.spy['00001'] == message
 
 

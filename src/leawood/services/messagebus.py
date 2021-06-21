@@ -1,4 +1,5 @@
 import queue
+from typing import Callable, Dict, Type
 from leawood.domain.model import Message
 import time
 from threading import Thread
@@ -12,10 +13,9 @@ class MessageBusError(Exception):
     def __init__(self, message):
         super().__init__(message)
 
-
 class MessageBus:
     def __init__(self) -> None:
-        self.event_callback = None
+        self.message_handlers = None
 
     def is_running(self):
         return self._running
@@ -23,16 +23,17 @@ class MessageBus:
     def terminate(self):
         self._running = False
 
-    def register_message_callback(self, callback):
-        self.event_callback = callback
+    def register_message_handlers(self, message_handlers: Dict[Type[Message], Callable]):
+        self.message_handlers = message_handlers
 
     def _listener(self):
         self._running = True
         while self.is_running():
             item = self.pop()
             if item != None:
-                logger.info(f'Calling the callback {self.event_callback}')
-                self.event_callback(item)
+                event_handler = self.message_handlers[type(item)]
+                logger.info(f'Calling the messagse handler {event_handler}')
+                event_handler(item)
                 self.message_queue.task_done()
 
     @abc.abstractmethod
@@ -88,7 +89,7 @@ class MQTTMessageBus(MessageBus):
 
 def activate(message_bus: MessageBus):
     logger.info(f'Starting the message bus')
-    if message_bus.event_callback == None:
+    if message_bus.message_handlers == None:
         raise MessageBusError('The event bus must have a callback defined.')
     message_bus.listener_thread = Thread(target=message_bus._listener)
     message_bus.listener_thread.start()
