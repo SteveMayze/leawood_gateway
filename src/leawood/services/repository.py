@@ -8,7 +8,7 @@ class Repository(abc.ABC):
     node_cache = {}
 
     def __init__(self) -> None:
-        pass
+        self.node_cache = {}
 
     def get_node(self, addr64bit: str) -> Node:
         if addr64bit in self.node_cache:

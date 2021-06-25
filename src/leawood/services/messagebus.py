@@ -17,6 +17,7 @@ class MessageBusError(Exception):
 class MessageBus(abc.ABC):
     def __init__(self) -> None:
         self.message_handlers = None
+        self._running = False
 
     def is_running(self):
         return self._running

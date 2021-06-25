@@ -1,5 +1,5 @@
 
-from leawood.domain.model import Message, Data, Ready, DataReq, DataAck, Node
+from leawood.domain.model import Message, Data, NodeIntro, Ready, DataReq, DataAck, Node
 from leawood.domain.hw_modules import Gateway, Modem, Sensor
 from leawood.services import repository
 from leawood.services.messagebus import LocalMessageBus
@@ -38,6 +38,10 @@ class FakeModem(Modem):
 class FakeRepository(Repository):
     repository_cache = {}
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.repository_cache = {}
+
     def _add_node(self, node: Node):
         self.repository_cache[node.addr64bit] = node
     
@@ -55,9 +59,11 @@ def config():
     return Config(args)
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def modem() -> Modem:
-    return  FakeModem()
+    modem = FakeModem()
+    modem.spy = {}
+    return  modem
 
 MAX_WAIT = 1
 
@@ -123,6 +129,32 @@ def test_receive_ready_message_from_a_known_node(config, modem):
         # the sensor.
 
         message = DataReq('00001', None)
+        assert modem.spy['00001'] == message
+
+        logger.info(f'Waiting for the message bus to shut down')
+        messagebus.shutdown(message_bus)
+        wait_for_runnning_state(message_bus, False)
+
+
+def test_receive_ready_message_from_an_unknown_node(config, modem):
+
+        repository = FakeRepository()
+        message_bus = LocalMessageBus()
+        gateway = Gateway(message_bus, repository, modem)
+
+        messagebus.activate(message_bus)
+        logger.info(f'Waiting for the message bus to start')
+        wait_for_runnning_state(message_bus, True)
+
+        message = Ready('00001', None)
+        modem.receive_message(message)
+        wait_for_empty_queue(message_bus, True)
+
+        # The hub receives a READY message from an unknown field device
+        # This will result in a 'DATAINTRO' being sent out to
+        # the sensor to introduce itself.
+
+        message = NodeIntro('00001', None)
         assert modem.spy['00001'] == message
 
         logger.info(f'Waiting for the message bus to shut down')

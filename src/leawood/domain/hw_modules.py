@@ -33,7 +33,8 @@ class Sensor(Node):
         self.message_bus = message_bus
         self.modem = modem
 
-
+    ## This could eventuall pass over to be a serial number
+    ## since the address might not always
     def addr64bit(self):
         return self.modem.addr64bit
 
@@ -72,15 +73,16 @@ class Gateway():
 
     def handle_ready(self, message: Message):
         logger.info('Operation READY, sending DATA_REQ')
-
         ## First of all determine if this is from a registered node
         node = self.repository.get_node(message.addr64bit)
         if node != None:
             ## If so, then send a request for data.
+            logger.info(f'The node {node} has requested further instruction')
             newMessage = DataReq( message.addr64bit, None)
             self.modem.send_message(newMessage)
         else:
             ## Else, send a request for introduction
+            logger.info(f'The node {node} has requested further instruction')
             newMessage = NodeIntro( message.addr64bit, None)
             self.modem.send_message(newMessage)
 
