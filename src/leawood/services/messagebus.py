@@ -13,7 +13,8 @@ class MessageBusError(Exception):
     def __init__(self, message):
         super().__init__(message)
 
-class MessageBus:
+
+class MessageBus(abc.ABC):
     def __init__(self) -> None:
         self.message_handlers = None
 

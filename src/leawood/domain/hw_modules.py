@@ -1,5 +1,6 @@
 from leawood.services.messagebus import MessageBus
-from leawood.domain.model import Message, Data, Ready, DataReq, DataAck
+from leawood.services.repository import Repository
+from leawood.domain.model import Message, Data, Ready, DataReq, DataAck, NodeIntro, Node
 import abc
 import logging 
 
@@ -7,23 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 
-
-def handle_ready(message: Message):
-    logger.info('Operation READY, sending DATA_REQ')
-    newMessage = DataReq( message.modem, message.addr64bit, None)
-    message.modem.send_message(newMessage)
-
-def handle_data(message: Message):
-    logger.info('Operation DATA, sending DATA_ACK')
-    ## Post the data to the repository
-
-    ## call on a REST service layer to post the
-    ## message
-
-    newMessage = DataAck( message.modem, message.addr64bit,None)
-    message.modem.send_message(newMessage)
-
 class Modem(abc.ABC):
+
     def __init__(self):
         pass
 
@@ -40,10 +26,19 @@ class Modem(abc.ABC):
         raise NotImplementedError
 
 
-class Sensor():
+
+class Sensor(Node):
+
     def __init__(self, message_bus: MessageBus, modem: Modem):
         self.message_bus = message_bus
         self.modem = modem
+
+
+    def addr64bit(self):
+        return self.modem.addr64bit
+
+    def addr64bit(self, value):
+        self.modem.addr64bit = value
 
     def send_message(self):
         self.modem.send_message()
@@ -54,12 +49,14 @@ class Sensor():
 
 class Gateway():
 
-    def __init__(self,  message_bus: MessageBus, modem: Modem):
+    def __init__(self,  message_bus: MessageBus, repository: Repository, modem: Modem):
         self.message_bus = message_bus
         self.modem = modem
-        self.nodes = []
+        self.repository = repository
+
         modem.register_receive_callback(self._message_received_callback)
-        message_bus.register_message_handlers(MESSAGE_HANDLERS)
+        message_bus.register_message_handlers(self.get_handlers())
+
 
     def send_message(self, message: Message):
         logger.info(f'sending message {message}')
@@ -71,8 +68,36 @@ class Gateway():
         logger.info(f'received message {message}')
         self.message_bus.push(message)
 
-MESSAGE_HANDLERS={
-    Ready: handle_ready,
-    Data: handle_data
 
-}
+
+    def handle_ready(self, message: Message):
+        logger.info('Operation READY, sending DATA_REQ')
+
+        ## First of all determine if this is from a registered node
+        node = self.repository.get_node(message.addr64bit)
+        if node != None:
+            ## If so, then send a request for data.
+            newMessage = DataReq( message.addr64bit, None)
+            self.modem.send_message(newMessage)
+        else:
+            ## Else, send a request for introduction
+            newMessage = NodeIntro( message.addr64bit, None)
+            self.modem.send_message(newMessage)
+
+
+    def handle_data(self, message: Message):
+        logger.info('Operation DATA, sending DATA_ACK')
+        ## Post the data to the repository
+
+        ## call on a REST service layer to post the
+        ## message
+
+        newMessage = DataAck( message.addr64bit,None)
+        self.modem.send_message(newMessage)
+
+    def get_handlers(self):
+        MESSAGE_HANDLERS = {
+            Ready: self.handle_ready,
+            Data: self.handle_data
+        }
+        return MESSAGE_HANDLERS

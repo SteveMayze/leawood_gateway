@@ -1,13 +1,13 @@
 
 from dataclasses import dataclass
 from typing import Final
+import abc
 
 class Message:
     pass
 
 @dataclass
 class Ready(Message):
-    modem: object
     addr64bit: str
     payload: str
     operation: Final = 'READY'
@@ -15,14 +15,12 @@ class Ready(Message):
 
 @dataclass
 class DataReq(Message):
-    modem: object
     addr64bit: str
     payload: str
     operation: Final = 'DATAREQ'
 
 @dataclass
 class Data(Message):
-    modem: object
     addr64bit: str
     payload: str
     operation: Final = 'DATA'
@@ -30,7 +28,33 @@ class Data(Message):
 
 @dataclass
 class DataAck(Message):
-    modem: object
     addr64bit: str
     payload: str
     operation: Final = 'DATAACK'
+
+@dataclass
+class NodeIntro(Message):
+    addr64bit: str
+    payload: str
+    operation: Final = 'NODEINTRO'
+
+
+class Node(abc.ABC):
+
+
+    @property
+    def addr64bit(self):
+        raise NotImplementedError
+
+    @addr64bit.setter
+    def addr64bit(self, value):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def send_message(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def receive_message_callback(self, message):
+        raise NotImplementedError
+        self.message_bus.push(message)

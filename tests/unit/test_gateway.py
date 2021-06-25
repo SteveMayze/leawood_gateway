@@ -1,12 +1,15 @@
 
-from leawood.domain.model import Message, Data, Ready, DataReq, DataAck
-from leawood.domain.hw_modules import Gateway, Modem
+from leawood.domain.model import Message, Data, Ready, DataReq, DataAck, Node
+from leawood.domain.hw_modules import Gateway, Modem, Sensor
+from leawood.services import repository
 from leawood.services.messagebus import LocalMessageBus
 from leawood.services import messagebus
 from leawood.config import Config
 import logging 
 import pytest
 import time
+
+from leawood.services.repository import Repository
 
 
 
@@ -31,6 +34,20 @@ class FakeModem(Modem):
         logger.info(f'Received message: {message}')
         self._receive_message_callback(message)
     
+
+class FakeRepository(Repository):
+    repository_cache = {}
+
+    def _add_node(self, node: Node):
+        self.repository_cache[node.addr64bit] = node
+    
+    def _get_node(self, addr64bit: str) -> Node:
+        if addr64bit in self.repository_cache:
+            return self.repository_cache[addr64bit]
+        return None
+
+    def _post_sensor_data(self, message: Message):
+        pass
 
 @pytest.fixture
 def config():
@@ -71,9 +88,10 @@ def wait_for_runnning_state(worker, state):
 
 
 def test_receive_message(config, modem):
+    repository = FakeRepository()
     message_bus = LocalMessageBus()
-    gateway = Gateway(message_bus, modem)
-    message = Data(modem, '00001', '{"bus-voltage": 10.5}')
+    gateway = Gateway(message_bus, repository, modem)
+    message = Data('00001', '{"bus-voltage": 10.5}')
 
     modem.receive_message(message)
 
@@ -82,16 +100,21 @@ def test_receive_message(config, modem):
     assert gateway.message_bus.pop() == message
 
 
-def test_receive_ready_message(config, modem):
+def test_receive_ready_message_from_a_known_node(config, modem):
+
+        repository = FakeRepository()
 
         message_bus = LocalMessageBus()
-        gateway = Gateway(message_bus, modem)
+        known_node = Sensor(message_bus, modem)
+        gateway = Gateway(message_bus, repository, modem)
+        known_node.addr64bit = '00001'
+        repository.repository_cache[known_node.addr64bit] = known_node
 
         messagebus.activate(message_bus)
         logger.info(f'Waiting for the message bus to start')
         wait_for_runnning_state(message_bus, True)
 
-        message = Ready(modem, '00001', None)
+        message = Ready('00001', None)
         modem.receive_message(message)
         wait_for_empty_queue(message_bus, True)
 
@@ -99,7 +122,7 @@ def test_receive_ready_message(config, modem):
         # This will result in a 'DATA_REQ' being sent out to
         # the sensor.
 
-        message = DataReq(modem, '00001', None)
+        message = DataReq('00001', None)
         assert modem.spy['00001'] == message
 
         logger.info(f'Waiting for the message bus to shut down')
@@ -109,15 +132,16 @@ def test_receive_ready_message(config, modem):
 
 def test_receive_data_message(config, modem):
 
+        repository = FakeRepository()
         message_bus = LocalMessageBus()
-        gateway = Gateway(message_bus, modem)
+        gateway = Gateway(message_bus, repository, modem)
 
         messagebus.activate(message_bus)
         logger.info(f'Waiting for the message bus to start')
         wait_for_runnning_state(message_bus, True)
 
         payload = '{"bus-voltage": 10.5}'
-        rcv_message = Data(modem, '00001', payload)
+        rcv_message = Data('00001', payload)
         modem.receive_message(rcv_message)
         wait_for_empty_queue(message_bus, True)
 
@@ -125,7 +149,7 @@ def test_receive_data_message(config, modem):
         # This will result in a 'DATA_ACK' being sent out to
         # the sensor.
 
-        message = DataAck(modem, '00001',None)
+        message = DataAck('00001',None)
         assert modem.spy['00001'] == message
 
 
