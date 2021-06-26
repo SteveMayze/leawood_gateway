@@ -3,6 +3,11 @@
 import abc
 from leawood.domain.model import Message, Node
 
+class RepositoryError(Exception):
+    def __init__(self, message: Message, args: object) -> None:
+        super().__init__(*args)
+        self.message = message
+
 class Repository(abc.ABC):
 
     node_cache = {}
@@ -20,14 +25,26 @@ class Repository(abc.ABC):
                 return node
         return None
     
+
+    def post_sensor_data(self, message: Message):
+        node = self.get_node(message.addr64bit)
+        if node:
+            self._post_sensor_data(node, message)
+        else:
+            raise RepositoryError(message, 'The message does not correspond to a known node.')
+
+    def add_node(self, node: Node):
+        self._add_node(node)
+        self.node_cache[node.addr64bit] = node
+
     @abc.abstractmethod
     def _get_node(self, addr64bit: str) -> Node:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _add_node(self, sensor: Node):
+    def _add_node(self, node: Node):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _post_sensor_data(self, messasge: Message):
+    def _post_sensor_data(self, node: Node, message: Message):
         raise NotImplementedError

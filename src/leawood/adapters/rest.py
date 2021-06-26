@@ -4,14 +4,15 @@ from requests.auth import HTTPBasicAuth
 
 import logging
 
+from leawood.services.repository import Repository
+
 logger = logging.getLogger(__name__)
 
 
-class Rest:
+class Rest(Repository):
 
     def __init__(self, config):
         self.config = config
-
 
     def get(self, resource, query = None):
         ## Get the device details
@@ -47,4 +48,13 @@ class Rest:
 
 
         
+
+        def _get_node(self, addr64bit: str) -> Node:
+            return None
+
+        def _add_node(self, sensor: Node):
+            pass
+
+        def _post_sensor_data(self, messasge: Message):
+            pass
 

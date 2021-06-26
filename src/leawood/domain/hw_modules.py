@@ -1,6 +1,6 @@
 from leawood.services.messagebus import MessageBus
 from leawood.services.repository import Repository
-from leawood.domain.model import Message, Data, Ready, DataReq, DataAck, NodeIntro, Node
+from leawood.domain.model import IntroAck, Message, Data, NodeIntroReq, Ready, DataReq, DataAck, NodeIntro, Node
 import abc
 import logging 
 
@@ -32,14 +32,15 @@ class Sensor(Node):
     def __init__(self, message_bus: MessageBus, modem: Modem):
         self.message_bus = message_bus
         self.modem = modem
+        self._addr64bit = None
 
     ## This could eventuall pass over to be a serial number
     ## since the address might not always
     def addr64bit(self):
-        return self.modem.addr64bit
+        return self._addr64bit
 
     def addr64bit(self, value):
-        self.modem.addr64bit = value
+        self._addr64bit = value
 
     def send_message(self):
         self.modem.send_message()
@@ -83,23 +84,33 @@ class Gateway():
         else:
             ## Else, send a request for introduction
             logger.info(f'The node {node} has requested further instruction')
-            newMessage = NodeIntro( message.addr64bit, None)
+            newMessage = NodeIntroReq( message.addr64bit, None)
             self.modem.send_message(newMessage)
 
 
     def handle_data(self, message: Message):
-        logger.info('Operation DATA, sending DATA_ACK')
         ## Post the data to the repository
+        logger.info('Operation DATA, posting to the respository')
 
-        ## call on a REST service layer to post the
-        ## message
+        self.repository.post_sensor_data(message)
 
+        logger.info('Operation DATA, sending DATA_ACK')
         newMessage = DataAck( message.addr64bit,None)
         self.modem.send_message(newMessage)
+
+    def handle_new_node(self, message: Message):
+        ## TODO - The type of node needs to be qualified so that the
+        ##        corrent object is created.
+        node = Sensor(None, None)
+        node.addr64bit = message.addr64bit
+        self.repository.add_node(node)
+        ackMessage = IntroAck(message.addr64bit, None)
+        self.modem.send_message(ackMessage)
 
     def get_handlers(self):
         MESSAGE_HANDLERS = {
             Ready: self.handle_ready,
-            Data: self.handle_data
+            Data: self.handle_data,
+            NodeIntro: self.handle_new_node
         }
         return MESSAGE_HANDLERS

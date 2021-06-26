@@ -33,10 +33,22 @@ class DataAck(Message):
     operation: Final = 'DATAACK'
 
 @dataclass
+class NodeIntroReq(Message):
+    addr64bit: str
+    payload: str
+    operation: Final = 'NODEINTROREQ'
+
+@dataclass
 class NodeIntro(Message):
     addr64bit: str
     payload: str
     operation: Final = 'NODEINTRO'
+
+@dataclass
+class IntroAck(Message):
+    addr64bit: str
+    payload: str
+    operation: Final = 'NODEINTROACK'
 
 
 class Node(abc.ABC):
