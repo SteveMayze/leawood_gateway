@@ -1,5 +1,6 @@
 
-from leawood.domain.model import IntroAck, Message, Data, NodeIntro, NodeIntroReq, Ready, DataReq, DataAck, Node
+from leawood.domain.messages import IntroAck, Message, Data, NodeIntroReq, Ready, DataReq, DataAck, NodeIntro
+from leawood.domain.model import Node
 from leawood.domain.hardware import Gateway, Modem, Sensor
 from leawood.services import repository
 from leawood.services.messagebus import LocalMessageBus

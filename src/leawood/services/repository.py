@@ -1,7 +1,8 @@
 
 
 import abc
-from leawood.domain.model import Message, Node
+from leawood.domain.messages import Message
+from leawood.domain.model import Node
 
 class RepositoryError(Exception):
     def __init__(self, message: Message, args: object) -> None:

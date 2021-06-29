@@ -1,6 +1,9 @@
+
+
 from leawood.services.messagebus import MessageBus
 from leawood.services.repository import Repository
-from leawood.domain.model import IntroAck, Message, Data, NodeIntroReq, Ready, DataReq, DataAck, NodeIntro, Node
+from leawood.domain.messages import IntroAck, Message, Data, NodeIntroReq, Ready, DataReq, DataAck, NodeIntro
+from leawood.domain.model import Node
 import abc
 import logging 
 

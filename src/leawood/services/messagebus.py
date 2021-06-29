@@ -1,6 +1,6 @@
 import queue
 from typing import Callable, Dict, Type
-from leawood.domain.model import Message
+from leawood.domain.messages import Message
 import time
 from threading import Thread
 import logging 
