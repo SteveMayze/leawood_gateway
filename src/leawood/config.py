@@ -3,22 +3,15 @@ import argparse
 import logging
 import json
 
-
-logging.basicConfig()
-debug = False
+logger = logging.getLogger(__name__)
 
 class Config:
 
     def __init__(self, args):
-        self._log = logging.getLogger('config')
         self._subscribe_topic = 'power/sensor/+/data'
         self._publish_topic = 'power/sensor/0013A20041629BFB/data'
         self._config_data = self.handle_config(self.parse_args(args=args) )
         self._debug = self.config_data["debug"]
-
-    @property
-    def log(self):
-        return self._log
 
     @property
     def config_data(self):
@@ -27,14 +20,6 @@ class Config:
     @property
     def debug(self):
         return self._debug
-
-    def getLogger(self, module):
-        log = logging.getLogger(module)
-        if ( self.debug ):
-            log.setLevel(logging.DEBUG)
-        else:
-            log.setLevel(logging.INFO)
-        return log
 
 
     @property
@@ -80,25 +65,25 @@ class Config:
         config = args.config
 
         if ( debug ):
-            self.log.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
         else:
-            self.log.setLevel(logging.INFO)
+            logger.setLevel(logging.INFO)
 
         config_data = {}
-        self.log.debug(f"Command line args: {args}")
+        logger.debug(f"Command line args: {args}")
 
         if config != None:
-            self.log.debug('The config file is set to %s' % config )
+            logger.debug('The config file is set to %s' % config )
 
             with open(config) as f:
                 config_data = json.load(f)
 
-            self.log.debug('handle_config: initial config_data=%s' % json.dumps(config_data))
+            logger.debug('handle_config: initial config_data=%s' % json.dumps(config_data))
 
         if args.debug != None:
             config_data['debug'] = debug
         else:
-            self.log.debug( 'debug is not set on the command line')
+            logger.debug( 'debug is not set on the command line')
             config_data['debug'] = 'False'
 
         if args.username != None:
@@ -108,49 +93,49 @@ class Config:
             config_data['password'] = args.password
 
         if args.rest != None:
-            self.log.debug( f'REST Set. Setting the base REST URL {args.rest}')
+            logger.debug( f'REST Set. Setting the base REST URL {args.rest}')
             config_data['rest'] = args.rest
 
         if args.certpath != None:
-            self.log.debug( f'Certificates path: {args.certpath}')
+            logger.debug( f'Certificates path: {args.certpath}')
             config_data['certpath'] = args.certpath
 
         if args.cacert != None:
-            self.log.debug( f'CA certificate name: {args.cacert}')
+            logger.debug( f'CA certificate name: {args.cacert}')
             config_data['cacert'] = args.cacert
 
         if args.clientcrt != None:
-            self.log.debug( f'Client certificate name: {args.clientcrt}')
+            logger.debug( f'Client certificate name: {args.clientcrt}')
             config_data['clientcrt'] = args.clientcrt
 
         if args.clientkey != None:
-            self.log.debug( f'Client key name: {args.clientkey}')
+            logger.debug( f'Client key name: {args.clientkey}')
             config_data['clientkey'] = args.clientkey
 
         if args.mqttserver != None:
-            self.log.debug( f'MQTT server IP address: {args.mqttserver}')
+            logger.debug( f'MQTT server IP address: {args.mqttserver}')
             config_data['mqttserver'] = args.mqttserver
 
         if args.mqttport != None:
-            self.log.debug( f'MQTT server port: {args.mqttport}')
+            logger.debug( f'MQTT server port: {args.mqttport}')
             config_data['mqttport'] = args.mqttport
 
         if args.file != None:
-            self.log.debug( f'Payload file: {args.file}')
+            logger.debug( f'Payload file: {args.file}')
             config_data['file'] = args.file
 
         if args.serialport != None:
-            self.log.debug( f'Serial Port: {args.serialport}')
+            logger.debug( f'Serial Port: {args.serialport}')
             config_data['serial-port'] = args.serialport
 
         if args.baud != None:
-            self.log.debug( f'Baud Rate: {args.baud}')
+            logger.debug( f'Baud Rate: {args.baud}')
             config_data['serial-baud'] = args.baud
 
         if args.sleeptime != None:
-            self.log.debug( f'Sleep time: {args.sleeptime}')
+            logger.debug( f'Sleep time: {args.sleeptime}')
             config_data['sleep-time'] = args.sleeptime
 
-        self.log.debug(f'config_data: {config_data}')
+        logger.debug(f'config_data: {config_data}')
         return config_data
 

@@ -3,8 +3,11 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 import logging
+from leawood.domain.hardware import Sensor
 
 from leawood.services.repository import Repository
+from leawood.domain.model import Node
+from leawood.domain.messages import Message
 
 logger = logging.getLogger(__name__)
 
@@ -47,14 +50,27 @@ class Rest(Repository):
         )
 
 
+    
+
+    def _get_node(self, addr64bit: str) -> Node:
         
+        resource = f'devices?q={{"address":{{"$eq":"{addr64bit}"}}}}'
+        item = self.get(resource)
 
-        def _get_node(self, addr64bit: str) -> Node:
-            return None
+        node = Sensor()
+        node.addr64bit = addr64bit
+        node.device_id = item['device_id']
+        node.node_class = item['class']
+        node.name = item['name']
+        node.serial_id = item['serial_id']
+        node.description = item['description']
+        node.location = item['location']
+        node.domain = item['domain']
+        return node
 
-        def _add_node(self, sensor: Node):
-            pass
+    def _add_node(self, sensor: Node):
+        pass
 
-        def _post_sensor_data(self, messasge: Message):
-            pass
+    def _post_sensor_data(self, messasge: Message):
+        pass
 

@@ -7,9 +7,8 @@ from leawood.domain.model import Node
 import abc
 import logging 
 
+
 logger = logging.getLogger(__name__)
-
-
 
 class Modem(abc.ABC):
 
@@ -32,10 +31,17 @@ class Modem(abc.ABC):
 
 class Sensor(Node):
 
-    def __init__(self, message_bus: MessageBus, modem: Modem):
+    def __init__(self, message_bus: MessageBus = None, modem: Modem = None):
         self.message_bus = message_bus
         self.modem = modem
         self._addr64bit = None
+        self.device_id = None
+        self.node_class = None
+        self.name = None
+        self.serial_id = None
+        self.description = None
+        self.location = None
+        self.domain = None
 
     ## This could eventuall pass over to be a serial number
     ## since the address might not always
@@ -52,14 +58,14 @@ class Sensor(Node):
         self.message_bus.push(message)
 
 
-class Gateway():
+class Gateway(Node):
 
     def __init__(self,  message_bus: MessageBus, repository: Repository, modem: Modem):
         self.message_bus = message_bus
         self.modem = modem
         self.repository = repository
 
-        modem.register_receive_callback(self._message_received_callback)
+        modem.register_receive_callback(self.receive_message_callback)
         message_bus.register_message_handlers(self.get_handlers())
 
 
@@ -69,7 +75,7 @@ class Gateway():
 
     # Recevies a message from a modem and pushes this directly
     # to the message bus to minimise the time spent.
-    def _message_received_callback(self, message: Message):
+    def receive_message_callback(self, message: Message):
         logger.info(f'received message {message}')
         self.message_bus.push(message)
 
