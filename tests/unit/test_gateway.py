@@ -100,6 +100,11 @@ def wait_for_runnning_state(worker, state):
 
 
 
+def test_message():
+    ready = Ready('00001', '{"param": "value"}')
+    assert ready.addr64bit == '00001'
+    assert ready.payload == '{"param": "value"}'
+
 def test_receive_message(config, repository, modem):
     message_bus = LocalMessageBus()
     gateway = Gateway(message_bus, repository, modem)

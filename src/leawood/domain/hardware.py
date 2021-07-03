@@ -51,10 +51,12 @@ class Sensor(Node):
     def addr64bit(self, value):
         self._addr64bit = value
 
-    def send_message(self):
-        self.modem.send_message()
+    def send_message(self, message: Message):
+        logger.info(f'sending message {message}')
+        self.modem.send_message(message)
 
     def receive_message_callback(self, message):
+        logger.info(f'Recevied message {message}')
         self.message_bus.push(message)
 
 

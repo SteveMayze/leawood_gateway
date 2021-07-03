@@ -35,15 +35,16 @@ class Repository(abc.ABC):
             raise RepositoryError(message, 'The message does not correspond to a known node.')
 
     def add_node(self, node: Node):
-        self._add_node(node)
-        self.node_cache[node.addr64bit] = node
+        new_node = self._add_node(node)
+        self.node_cache[node.addr64bit] = new_node
+        return new_node
 
     @abc.abstractmethod
     def _get_node(self, addr64bit: str) -> Node:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _add_node(self, node: Node):
+    def _add_node(self, node: Node) -> Node:
         raise NotImplementedError
 
     @abc.abstractmethod

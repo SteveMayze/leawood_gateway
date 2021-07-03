@@ -1,5 +1,10 @@
 
 from leawood.config import Config
+from leawood.domain.hardware import Sensor
+from leawood.services import messagebus
+from leawood.services.messagebus import LocalMessageBus
+from leawood.adapters.xbee import XBeeModem
+
 import pytest
 import os
 
@@ -22,3 +27,10 @@ def create_config(pytestconfig, configname, portname):
 def config(pytestconfig):
     return create_config(pytestconfig, 'config.json', 'xbeeport')
 
+@pytest.fixture
+def sensor(pytestconfig):
+    sensor_config = create_config(pytestconfig, 'config.json', 'sensorxbeeport')
+    message_bus = LocalMessageBus()
+    modem = XBeeModem(sensor_config)
+    sensor = Sensor(messagebus, modem)
+    return sensor

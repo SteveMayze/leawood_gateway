@@ -6,10 +6,13 @@ import pytest
 
 import logging
 
-from leawood.domain.hardware import Gateway
+from leawood.domain.messages import Ready
+from leawood.domain.hardware import Gateway, Sensor
 from leawood.services.messagebus import LocalMessageBus
 from leawood.services import messagebus 
 import time
+import uuid
+import json
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -53,7 +56,23 @@ class TestGateway:
         assert node.description == 'The power monitor  on the mobile chicken coop'
 
 
-    def test_gateway_operation(self, config):
+    def test_repository_add_node(self, config):
+        random_addr = str(uuid.uuid1())
+        respository = Rest(config)
+        node = Sensor()
+        node.addr64bit = random_addr
+        node.domain = 'POWER'
+        node.node_class = 'SENSOR'
+        node.serial_id = random_addr
+        node.name = f'TEST GENERATED DEVICE {random_addr}'
+        node.description = 'A device generated via integration tests'
+        node = respository.add_node(node)
+        assert node != None
+        assert node.serial_id == random_addr
+        assert node.description == 'A device generated via integration tests'
+
+
+    def test_gateway_operation(self, config, sensor):
 
         ## TODO - A better story is required to determin how and
         ##        when the modem is opened and closed.
@@ -65,6 +84,12 @@ class TestGateway:
 
         messagebus.activate(message_bus)
         wait_for_runnning_state(message_bus, True)
+
+        # Sensor to send READY.
+        sensor.send_message( Ready(sensor.addr64bit, None))
+        
+        # Verify the Data request.
+
 
         messagebus.shutdown(message_bus)
         wait_for_runnning_state(message_bus, False)

@@ -20,7 +20,7 @@ class XBeeModem(Modem):
     def send_message(self, message: Message):
         self.open()
         logger.info(f'Creating the remote device at {message.addr64bit}')
-        remote_device = devices.RemoteXBeeDevice(self.sensing_device, devices.XBee64BitAddress.from_hex_string(message.addr64bit))
+        remote_device = devices.RemoteXBeeDevice(self.xbee, devices.XBee64BitAddress.from_hex_string(message.addr64bit))
         logger.info(f'Sending from {self.xbee.get_64bit_addr()} to {message.addr64bit}')
         self.xbee.send_data(remote_device, message.payload)
 
