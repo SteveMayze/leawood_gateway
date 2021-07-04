@@ -19,4 +19,11 @@ class Node(abc.ABC):
     @abc.abstractmethod
     def receive_message_callback(self, message):
         raise NotImplementedError
-        self.message_bus.push(message)
+
+    @abc.abstractclassmethod
+    def open(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def close(self):
+        raise NotImplementedError

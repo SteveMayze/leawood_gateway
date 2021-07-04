@@ -73,6 +73,11 @@ class TestGateway:
 
 
     def test_gateway_operation(self, config, sensor):
+    
+        """
+        RED   0013A20041AE49D4
+        GREEN 0013A200415D58CB
+        """
 
         ## TODO - A better story is required to determin how and
         ##        when the modem is opened and closed.
@@ -80,17 +85,23 @@ class TestGateway:
         message_bus = LocalMessageBus()
         repository = Rest(config)
 
-        gateway = Gateway(message_bus, repository, modem)
+        try:
+            gateway = Gateway(message_bus, repository, modem)
 
-        messagebus.activate(message_bus)
-        wait_for_runnning_state(message_bus, True)
+            messagebus.activate(message_bus)
+            wait_for_runnning_state(message_bus, True)
 
-        # Sensor to send READY.
-        sensor.send_message( Ready(sensor.addr64bit, None))
-        
-        # Verify the Data request.
+            # Sensor to send READY.
+            logger.info('Sending Ready to the gateway node')
+            sensor.send_message( Ready('0013A20041AE49D4', None))
+            
+            # Verify the Data request.
+            logger.info('Waiting 10 seconds...')
+            time.sleep(10)
 
 
-        messagebus.shutdown(message_bus)
-        wait_for_runnning_state(message_bus, False)
-        modem.close()
+            messagebus.shutdown(message_bus)
+            wait_for_runnning_state(message_bus, False)
+        finally:
+            gateway.close()
+            sensor.close()

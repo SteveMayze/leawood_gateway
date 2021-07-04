@@ -32,5 +32,5 @@ def sensor(pytestconfig):
     sensor_config = create_config(pytestconfig, 'config.json', 'sensorxbeeport')
     message_bus = LocalMessageBus()
     modem = XBeeModem(sensor_config)
-    sensor = Sensor(messagebus, modem)
+    sensor = Sensor(message_bus, modem)
     return sensor

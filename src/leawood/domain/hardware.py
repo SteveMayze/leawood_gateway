@@ -3,6 +3,7 @@
 from leawood.services.messagebus import MessageBus
 from leawood.services.repository import Repository
 from leawood.domain.messages import IntroAck, Message, Data, NodeIntroReq, Ready, DataReq, DataAck, NodeIntro
+from leawood.domain import messages
 from leawood.domain.model import Node
 import abc
 import logging 
@@ -27,6 +28,14 @@ class Modem(abc.ABC):
     def receive_message(self, message: Message):
         raise NotImplementedError
 
+    @abc.abstractclassmethod
+    def open(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def close(self):
+        raise NotImplementedError
+
 
 
 class Sensor(Node):
@@ -42,6 +51,12 @@ class Sensor(Node):
         self.description = None
         self.location = None
         self.domain = None
+        if message_bus != None:
+            message_bus.register_message_handlers(self.get_handlers())
+        if modem != None:
+            modem.register_receive_callback(self.receive_message_callback)
+
+
 
     ## This could eventuall pass over to be a serial number
     ## since the address might not always
@@ -52,12 +67,28 @@ class Sensor(Node):
         self._addr64bit = value
 
     def send_message(self, message: Message):
-        logger.info(f'sending message {message}')
+        logger.info(f'Sensor sending message {message}')
         self.modem.send_message(message)
 
     def receive_message_callback(self, message):
-        logger.info(f'Recevied message {message}')
+        logger.info(f'Sensor recevied message {message.operation}, {message.payload}')
         self.message_bus.push(message)
+
+    def handle_DataReq(self, message: Message):
+        logger.info('Handling the DATAREQ event')
+        pass
+
+    def get_handlers(self):
+        MESSAGE_HANDLERS = {
+            DataReq: self.handle_DataReq,
+        }
+        return MESSAGE_HANDLERS
+
+    def open(self):
+        self.modem.open()
+
+    def close(self):
+        self.modem.close()        
 
 
 class Gateway(Node):
@@ -72,13 +103,13 @@ class Gateway(Node):
 
 
     def send_message(self, message: Message):
-        logger.info(f'sending message {message}')
+        logger.info(f'Gateway sending message {message}')
         self.modem.send_message(message)
 
     # Recevies a message from a modem and pushes this directly
     # to the message bus to minimise the time spent.
     def receive_message_callback(self, message: Message):
-        logger.info(f'received message {message}')
+        logger.info(f'Gateway recevied message {message.operation}, {message.payload}')
         self.message_bus.push(message)
 
 
@@ -125,3 +156,11 @@ class Gateway(Node):
             NodeIntro: self.handle_new_node
         }
         return MESSAGE_HANDLERS
+
+
+    def open(self):
+        self.modem.open()
+
+    def close(self):
+        self.modem.close()        
+

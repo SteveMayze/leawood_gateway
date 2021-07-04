@@ -1,5 +1,6 @@
 from leawood.domain.hardware import Modem
 from leawood.domain.messages import Message
+from leawood.domain import messages
 import logging
 from  digi.xbee import devices
 
@@ -22,7 +23,8 @@ class XBeeModem(Modem):
         logger.info(f'Creating the remote device at {message.addr64bit}')
         remote_device = devices.RemoteXBeeDevice(self.xbee, devices.XBee64BitAddress.from_hex_string(message.addr64bit))
         logger.info(f'Sending from {self.xbee.get_64bit_addr()} to {message.addr64bit}')
-        self.xbee.send_data(remote_device, message.payload)
+        ## TODO - Need to add the operation to the payload
+        self.xbee.send_data(remote_device, str(message.payload))
 
     def register_receive_callback(self, callback):
         self.open()
@@ -30,17 +32,12 @@ class XBeeModem(Modem):
         self.xbee.add_data_received_callback(self.receive_message)
     
     def receive_message(self, xbee_message):
-        logger.debug('BEGIN')
         address = xbee_message.remote_device.get_64bit_addr()
         data = xbee_message.data.decode('utf8')
-
-        message = Message()
-        message.addr64bit = address
-        message.payload = data
+        logger.info(f'XBee received message {data}')
+        ## TODO - The payload must container the operation.
+        message = messages.create_message(operation, address, data)
         self._receive_message(message)
-        
-        
-        logger.debug('END')
 
 
     def open(self):

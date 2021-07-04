@@ -31,11 +31,11 @@ class MessageBus(abc.ABC):
     def _listener(self):
         self._running = True
         while self.is_running():
-            item = self.pop()
-            if item != None:
-                event_handler = self.message_handlers[type(item)]
+            message = self.pop()
+            if message != None:
+                event_handler = self.message_handlers[type(message)]
                 logger.info(f'Calling the messagse handler {event_handler}')
-                event_handler(item)
+                event_handler(message)
                 self.message_queue.task_done()
 
     @abc.abstractmethod

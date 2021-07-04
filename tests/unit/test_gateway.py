@@ -22,6 +22,7 @@ class FakeModem(Modem):
 
     def send_message(self, message: Message):
         logger.info(f'Send message: {message}')
+        assert isinstance(message.addr64bit, str)
         self.spy[message.addr64bit] = message
 
     def register_receive_callback(self, callback):
@@ -31,6 +32,12 @@ class FakeModem(Modem):
         logger.info(f'Received message: {message}')
         self._receive_message_callback(message)
     
+    def open(self):
+        pass
+
+    def close(self):
+        pass
+
 
 class FakeRepository(Repository):
     def __init__(self) -> None:
@@ -51,6 +58,7 @@ class FakeRepository(Repository):
     def _post_sensor_data(self, node: Node, message: Message):
         self.spy['_post_sensor_data'] = message
         pass
+
 
 @pytest.fixture
 def config():
@@ -105,6 +113,7 @@ def test_message():
     assert ready.addr64bit == '00001'
     assert ready.payload == '{"param": "value"}'
 
+
 def test_receive_message(config, repository, modem):
     message_bus = LocalMessageBus()
     gateway = Gateway(message_bus, repository, modem)
@@ -119,30 +128,30 @@ def test_receive_message(config, repository, modem):
 
 def test_receive_ready_message_from_a_known_node(config, repository, modem):
 
-        message_bus = LocalMessageBus()
-        known_node = Sensor(message_bus, modem)
-        gateway = Gateway(message_bus, repository, modem)
-        known_node.addr64bit = '00001'
-        repository.repository_cache[known_node.addr64bit] = known_node
+    message_bus = LocalMessageBus()
+    known_node = Sensor(message_bus, modem)
+    gateway = Gateway(message_bus, repository, modem)
+    known_node.addr64bit = '00001'
+    repository.repository_cache[known_node.addr64bit] = known_node
 
-        messagebus.activate(message_bus)
-        logger.info(f'Waiting for the message bus to start')
-        wait_for_runnning_state(message_bus, True)
+    messagebus.activate(message_bus)
+    logger.info(f'Waiting for the message bus to start')
+    wait_for_runnning_state(message_bus, True)
 
-        message = Ready('00001', None)
-        modem.receive_message(message)
-        wait_for_empty_queue(message_bus, True)
+    message = Ready('00001', None)
+    modem.receive_message(message)
+    wait_for_empty_queue(message_bus, True)
 
-        # The hub receives a READY message from a field device
-        # This will result in a 'DATA_REQ' being sent out to
-        # the sensor.
+    # The hub receives a READY message from a field device
+    # This will result in a 'DATA_REQ' being sent out to
+    # the sensor.
 
-        message = DataReq('00001', None)
-        assert modem.spy['00001'] == message
+    message = DataReq('00001', None)
+    assert modem.spy['00001'] == message
 
-        logger.info(f'Waiting for the message bus to shut down')
-        messagebus.shutdown(message_bus)
-        wait_for_runnning_state(message_bus, False)
+    logger.info(f'Waiting for the message bus to shut down')
+    messagebus.shutdown(message_bus)
+    wait_for_runnning_state(message_bus, False)
 
 
 def test_receive_ready_message_from_an_unknown_node(config, repository, modem):

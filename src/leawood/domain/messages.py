@@ -5,48 +5,56 @@ from typing import Final
 
 
 class Message:
-    pass
+    def __init__(self, operation, addr64bit, payload) -> None:
+        self.operation = operation
+        self.addr64bit = addr64bit
+        self.payload = payload
 
 @dataclass
 class Ready(Message):
-    addr64bit: str
-    payload: str
-    operation: Final = 'READY'
 
+    def __init__(self, addr64bit, payload) -> None:
+        super().__init__('READY', addr64bit, payload)
 
 @dataclass
 class DataReq(Message):
-    addr64bit: str
-    payload: str
-    operation: Final = 'DATAREQ'
+    def __init__(self, addr64bit, payload) -> None:
+        super().__init__('DATAREQ', addr64bit, payload)
 
 @dataclass
 class Data(Message):
-    addr64bit: str
-    payload: str
-    operation: Final = 'DATA'
+    def __init__(self, addr64bit, payload) -> None:
+        super().__init__('DATA', addr64bit, payload)
 
 
 @dataclass
 class DataAck(Message):
-    addr64bit: str
-    payload: str
-    operation: Final = 'DATAACK'
+    def __init__(self, addr64bit, payload) -> None:
+        super().__init__('DATAACK', addr64bit, payload)
 
 @dataclass
 class NodeIntroReq(Message):
-    addr64bit: str
-    payload: str
-    operation: Final = 'NODEINTROREQ'
+    def __init__(self, addr64bit, payload) -> None:
+        super().__init__('NODEINTROREQ', addr64bit, payload)
 
 @dataclass
 class NodeIntro(Message):
-    addr64bit: str
-    payload: str
-    operation: Final = 'NODEINTRO'
+    def __init__(self, addr64bit, payload) -> None:
+        super().__init__('NODEINTRO', addr64bit, payload)
 
 @dataclass
 class IntroAck(Message):
-    addr64bit: str
-    payload: str
-    operation: Final = 'NODEINTROACK'
+    def __init__(self, addr64bit, payload) -> None:
+        super().__init__('NODEINTROACK', addr64bit, payload)
+
+
+def create_message(operation, addr64bit, payload) -> Message:
+    return {
+        'READY': Ready(addr64bit, payload),
+        'DATAREQ': DataReq(addr64bit, payload),
+        'DATA': Data(addr64bit, payload),
+        'DATAACK': DataAck(addr64bit, payload),
+        'NODEINTROREQ': NodeIntroReq(addr64bit, payload),
+        'NODEINTRO': NodeIntro(addr64bit, payload),
+        'NODEINTROACK': IntroAck(addr64bit, payload),
+    }[operation]
