@@ -1,8 +1,19 @@
 
 
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, TypedDict
 
+@dataclass
+class Telegram:
+    """
+    The telegram represents the data received from the modem unit. This information
+    is provided by the seding unit and must contain a serial_id and an operation
+    identifier. The payload is optional but, when present, is excpected to be a
+    name value pair.
+    """
+    serial_id: str
+    operation: str
+    payload: TypedDict
 
 class Message:
     def __init__(self, operation, addr64bit, payload) -> None:

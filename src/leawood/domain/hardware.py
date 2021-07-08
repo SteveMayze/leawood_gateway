@@ -1,5 +1,6 @@
 
 
+from typing import Any, Callable
 from leawood.services.messagebus import MessageBus
 from leawood.services.repository import Repository
 from leawood.domain.messages import IntroAck, Message, Data, NodeIntroReq, Ready, DataReq, DataAck, NodeIntro
@@ -12,28 +13,49 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Modem(abc.ABC):
+    """
+    The abstract class for a Modem type. This defines the primary interface
+    that a modem should support to operate within this system.
+    """
 
     def __init__(self):
         pass
 
     @abc.abstractmethod
     def send_message(self, message: Message):
+        """
+        Sends a message via the implemented modem to a device
+        that is addressed within the message.
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def register_receive_callback(self, callback):
+    def register_receive_callback(self, callback: Callable):
+        """
+        Registers a callback function that is called when a message
+        has been received on the implemented Modem type.
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def receive_message(self, message: Message):
+    def receive_message(self, message: Any):
+        """
+        Called when a modem type implementation receives a message.
+        """
         raise NotImplementedError
 
     @abc.abstractclassmethod
     def open(self):
+        """
+        Opens the connection to the modem.
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
     def close(self):
+        """
+        Closes the connection to the modem and releases the resource.
+        """
         raise NotImplementedError
 
 
