@@ -143,12 +143,12 @@ class Gateway(Node):
         if node != None:
             ## If so, then send a request for data.
             logger.info(f'The node {node} has requested further instruction')
-            newMessage = DataReq( message.addr64bit, None)
+            newMessage = DataReq(message.serial_id, message.addr64bit, None)
             self.modem.send_message(newMessage)
         else:
             ## Else, send a request for introduction
             logger.info(f'The node {node} has requested further instruction')
-            newMessage = NodeIntroReq( message.addr64bit, None)
+            newMessage = NodeIntroReq(message.serial_id, message.addr64bit, None)
             self.modem.send_message(newMessage)
 
 
@@ -159,7 +159,7 @@ class Gateway(Node):
         self.repository.post_sensor_data(message)
 
         logger.info('Operation DATA, sending DATA_ACK')
-        newMessage = DataAck( message.addr64bit,None)
+        newMessage = DataAck(message.serial_id, message.addr64bit,None)
         self.modem.send_message(newMessage)
 
     def handle_new_node(self, message: Message):
@@ -167,8 +167,9 @@ class Gateway(Node):
         ##        corrent object is created.
         node = Sensor(None, None)
         node.addr64bit = message.addr64bit
+        node.serial_id = message.serial_id
         self.repository.add_node(node)
-        ackMessage = IntroAck(message.addr64bit, None)
+        ackMessage = IntroAck(message.serial_id, message.addr64bit, None)
         self.modem.send_message(ackMessage)
 
     def get_handlers(self):

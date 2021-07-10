@@ -36,7 +36,8 @@ def wait_for_runnning_state(worker, state):
 
 
 def test_message():
-    ready = Ready('00001', '{"param": "value"}')
+    ready = Ready('ABCD', '00001', '{"param": "value"}')
+    assert ready.serial_id == 'ABCD'
     assert ready.addr64bit == '00001'
     assert ready.payload == '{"param": "value"}'
 
@@ -44,7 +45,7 @@ def test_message():
 def test_receive_message(repository, modem, message_bus, gateway):
     # message_bus = LocalMessageBus()
     # gateway = Gateway(message_bus, repository, modem)
-    message = Data('00001', '{"bus-voltage": 10.5}')
+    message = Data('ABCD', '00001', '{"bus-voltage": 10.5}')
 
     modem.receive_message(message)
 
@@ -56,7 +57,7 @@ def test_receive_message(repository, modem, message_bus, gateway):
 def test_receive_ready_message_from_a_known_node(gateway, sensor):
     gateway.repository.repository_cache[sensor.addr64bit] = sensor
 
-    message = Ready(sensor.addr64bit, None)
+    message = Ready(sensor.serial_id, sensor.addr64bit, None)
     gateway.modem.receive_message(message)
     wait_for_empty_queue(gateway.message_bus, True)
 
@@ -64,13 +65,13 @@ def test_receive_ready_message_from_a_known_node(gateway, sensor):
     # This will result in a 'DATA_REQ' being sent out to
     # the sensor.
 
-    message = DataReq(sensor.addr64bit, None)
+    message = DataReq(sensor.serial_id, sensor.addr64bit, None)
     assert gateway.modem.spy[sensor.addr64bit] == message
 
 
 def test_receive_ready_message_from_an_unknown_node(gateway, sensor):
 
-        message = Ready(sensor.addr64bit, None)
+        message = Ready(sensor.serial_id, sensor.addr64bit, None)
         gateway.modem.receive_message(message)
         wait_for_empty_queue(gateway.message_bus, True)
 
@@ -78,7 +79,7 @@ def test_receive_ready_message_from_an_unknown_node(gateway, sensor):
         # This will result in a 'DATAINTRO' being sent out to
         # the sensor to introduce itself.
 
-        message = NodeIntroReq(sensor.addr64bit, None)
+        message = NodeIntroReq(sensor.serial_id, sensor.addr64bit, None)
         assert gateway.modem.spy[sensor.addr64bit] == message
 
 
@@ -88,7 +89,7 @@ def test_receive_data_message(gateway, sensor):
     gateway.repository.repository_cache[sensor.addr64bit] = sensor
 
     payload = '{"bus-voltage": 10.5}'
-    rcv_message = Data(sensor.addr64bit, payload)
+    rcv_message = Data(sensor.serial_id, sensor.addr64bit, payload)
     gateway.modem.receive_message(rcv_message)
     wait_for_empty_queue(gateway.message_bus, True)
 
@@ -96,7 +97,7 @@ def test_receive_data_message(gateway, sensor):
     # This will result in a 'DATA_ACK' being sent out to
     # the sensor.
 
-    message = DataAck(sensor.addr64bit,None)
+    message = DataAck(sensor.serial_id, sensor.addr64bit, None)
     assert gateway.modem.spy[sensor.addr64bit] == message
     # Further to that, the gateway will publish the message
     # to the MQTT message bus to be picked up later by 
@@ -110,7 +111,7 @@ def test_receive_intro_message(gateway, sensor):
     gateway.repository.repository_cache[sensor.addr64bit] = sensor
 
     payload = '{"domain": "power", "class": "sensor", "name":"solar", "metadata":[{"bus-voltage":{"unit":"volts", "multiplier":1.0}}, {"load-current":{"unit":"amperes", "multiplier":0.001}}]}'
-    rcv_message = NodeIntro(sensor.addr64bit, payload)
+    rcv_message = NodeIntro(sensor.serial_id, sensor.addr64bit, payload)
     gateway.modem.receive_message(rcv_message)
     wait_for_empty_queue(gateway.message_bus, True)
 
@@ -118,7 +119,7 @@ def test_receive_intro_message(gateway, sensor):
     # This will result in a 'DATA_ACK' being sent out to
     # the sensor.
 
-    message = IntroAck(sensor.addr64bit, None)
+    message = IntroAck(sensor.serial_id, sensor.addr64bit, None)
     assert gateway.modem.spy[sensor.addr64bit] == message
 
     # Further to that, the gateway will publish the message

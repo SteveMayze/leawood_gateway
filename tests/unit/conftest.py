@@ -126,6 +126,7 @@ def gateway(message_bus, repository, modem):
 @pytest.fixture(scope='function')
 def sensor():
     sensor = Sensor(None, None)
+    sensor.serial_id = 'ABCD'
     sensor.addr64bit = "00000001"
     return sensor
 
