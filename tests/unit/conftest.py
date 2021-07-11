@@ -1,4 +1,7 @@
+from dataclasses import dataclass
+from typing import Callable, TypedDict
 from leawood.domain.messages import Message
+from leawood.domain import messages
 from leawood.domain.model import Node
 from leawood.domain.hardware import Gateway, Modem, Sensor
 from leawood.services.messagebus import LocalMessageBus
@@ -40,6 +43,15 @@ def wait_for_runnning_state(worker, state):
 
 
 
+@dataclass
+class FakeMessage():
+    addr64bit:str
+    payload: str
+    # def __init__(self, addr64bit, payload) -> None:
+    #     self.addr64bit = addr64bit
+    #     self.payload = payload
+
+
 class FakeModem(Modem):
     def __init__(self):
         self.spy = {}
@@ -50,12 +62,13 @@ class FakeModem(Modem):
         assert isinstance(message.addr64bit, str)
         self.spy[message.addr64bit] = message
 
-    def register_receive_callback(self, callback):
+    def register_receive_callback(self, callback: Callable):
         self._receive_message_callback  = callback
 
-    def receive_message(self, xbee_message):
-        logger.info(f'Received message: {xbee_message}')
-        self._receive_message_callback(xbee_message)
+    def receive_message(self, in_message: FakeMessage):
+        logger.info(f'Received message: {in_message}')
+        message = messages.create_message_from_data(in_message.addr64bit, in_message.payload)
+        self._receive_message_callback(message)
     
     def open(self):
         pass
@@ -83,6 +96,16 @@ class FakeRepository(Repository):
     def _post_sensor_data(self, node: Node, message: Message):
         self.spy['_post_sensor_data'] = message
         pass
+
+
+class MessageBuilder():
+    def create_message(self, addr64bit, payload):
+        return FakeMessage(addr64bit, payload)
+
+
+@pytest.fixture
+def message_builder():
+ return MessageBuilder()
 
 
 @pytest.fixture

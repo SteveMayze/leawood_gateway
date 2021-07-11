@@ -1,13 +1,10 @@
 
-from leawood.domain.messages import IntroAck, Data, NodeIntroReq, Ready, DataReq, DataAck, NodeIntro
+from leawood.domain.messages import Data, DataAck, IntroAck, NodeIntroReq, Ready, DataReq
 import logging 
 import time
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-
-
 
 MAX_WAIT = 1
 
@@ -36,28 +33,31 @@ def wait_for_runnning_state(worker, state):
 
 
 def test_message():
-    ready = Ready('ABCD', '00001', '{"param": "value"}')
+    ready = Ready('ABCD', '00001', None)
     assert ready.serial_id == 'ABCD'
     assert ready.addr64bit == '00001'
-    assert ready.payload == '{"param": "value"}'
+    assert ready.payload == None
+
+    ready = Data('ABCD', '00001', {"bus_voltage": "5.0"})
+    assert ready.serial_id == 'ABCD'
+    assert ready.addr64bit == '00001'
+    assert ready.payload == {"bus_voltage": "5.0"}
 
 
-def test_receive_message(repository, modem, message_bus, gateway):
-    # message_bus = LocalMessageBus()
-    # gateway = Gateway(message_bus, repository, modem)
-    message = Data('ABCD', '00001', '{"bus-voltage": 10.5}')
-
-    modem.receive_message(message)
+def test_receive_message(repository, modem, message_bus, gateway, message_builder):
+    rcv_message = message_builder.create_message('00001','[header]\noperation=DATA\nserial_id=ABCD\n[data]\nbus_voltage=10.5')
+    modem.receive_message(rcv_message)
 
     # Existing node
     # Push the message to the MQTT queue
+    message = Data('ABCD', '00001', {"bus_voltage":"10.5"})
     assert gateway.message_bus.pop() == message
 
 
-def test_receive_ready_message_from_a_known_node(gateway, sensor):
+def test_receive_ready_message_from_a_known_node(gateway, sensor, message_builder):
     gateway.repository.repository_cache[sensor.addr64bit] = sensor
 
-    message = Ready(sensor.serial_id, sensor.addr64bit, None)
+    message = message_builder.create_message( sensor.addr64bit ,f'[header]\noperation=READY\nserial_id={sensor.serial_id}')
     gateway.modem.receive_message(message)
     wait_for_empty_queue(gateway.message_bus, True)
 
@@ -69,9 +69,9 @@ def test_receive_ready_message_from_a_known_node(gateway, sensor):
     assert gateway.modem.spy[sensor.addr64bit] == message
 
 
-def test_receive_ready_message_from_an_unknown_node(gateway, sensor):
+def test_receive_ready_message_from_an_unknown_node(gateway, sensor, message_builder):
 
-        message = Ready(sensor.serial_id, sensor.addr64bit, None)
+        message = message_builder.create_message( sensor.addr64bit ,f'[header]\noperation=READY\nserial_id={sensor.serial_id}')
         gateway.modem.receive_message(message)
         wait_for_empty_queue(gateway.message_bus, True)
 
@@ -84,12 +84,12 @@ def test_receive_ready_message_from_an_unknown_node(gateway, sensor):
 
 
 
-def test_receive_data_message(gateway, sensor):
+def test_receive_data_message(gateway, sensor, message_builder):
 
     gateway.repository.repository_cache[sensor.addr64bit] = sensor
 
-    payload = '{"bus-voltage": 10.5}'
-    rcv_message = Data(sensor.serial_id, sensor.addr64bit, payload)
+    payload = '[data]\nbus_voltage=10.5'
+    rcv_message = message_builder.create_message(sensor.addr64bit ,f'[header]\noperation=DATA\nserial_id={sensor.serial_id}\n{payload}')
     gateway.modem.receive_message(rcv_message)
     wait_for_empty_queue(gateway.message_bus, True)
 
@@ -97,21 +97,37 @@ def test_receive_data_message(gateway, sensor):
     # This will result in a 'DATA_ACK' being sent out to
     # the sensor.
 
+    # message = message_builder.create_message( sensor.addr64bit ,f'operation=DATAACK\nserial_id={sensor.serial_id}')
     message = DataAck(sensor.serial_id, sensor.addr64bit, None)
     assert gateway.modem.spy[sensor.addr64bit] == message
     # Further to that, the gateway will publish the message
-    # to the MQTT message bus to be picked up later by 
+    # to the message bus to be picked up later by 
     # a listener the then post this using R£ST to the DB.
-
+    rcv_message = Data(sensor.serial_id, sensor.addr64bit, {"bus_voltage": "10.5"})
     assert gateway.repository.spy['_post_sensor_data'] == rcv_message
 
 
-def test_receive_intro_message(gateway, sensor):
+def test_receive_intro_message(gateway, sensor, message_builder):
 
     gateway.repository.repository_cache[sensor.addr64bit] = sensor
+    payload = f"""
+    [header]
+    operation=NODEINTRO
+    serial_id={sensor.serial_id}
+    domain=power
+    class=sensor
+    name=solar
+    [mdp bus_voltage]
+    unit=volts
+    symbol=V
+    multiplier=1.0
+    [mdp load_current]
+    unit=amps
+    symbol=A
+    multiplier=1.0
+    """
 
-    payload = '{"domain": "power", "class": "sensor", "name":"solar", "metadata":[{"bus-voltage":{"unit":"volts", "multiplier":1.0}}, {"load-current":{"unit":"amperes", "multiplier":0.001}}]}'
-    rcv_message = NodeIntro(sensor.serial_id, sensor.addr64bit, payload)
+    rcv_message = message_builder.create_message(sensor.addr64bit, payload)
     gateway.modem.receive_message(rcv_message)
     wait_for_empty_queue(gateway.message_bus, True)
 
@@ -127,5 +143,7 @@ def test_receive_intro_message(gateway, sensor):
 
     assert gateway.repository.spy['_add_node'].addr64bit == sensor.addr64bit
     assert gateway.repository.repository_cache[sensor.addr64bit].addr64bit == sensor.addr64bit
+    
+    ## TODO - Test for the metadata being written 11.07.21 this is now available.
 
 

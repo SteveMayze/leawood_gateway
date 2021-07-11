@@ -65,7 +65,7 @@ class XBeeModem(Modem):
         address = xbee_message.remote_device.get_64bit_addr()
         data = xbee_message.data.decode('utf8')
         logger.info(f'XBee received message {data}')
-        message = create_message_from_data(str(address), data)
+        message = messages.create_message_from_data(str(address), data)
         self._receive_message(message)
 
 
@@ -109,30 +109,3 @@ def create_telegram_from_message(modem: XBeeModem, message: Message) -> XBeeTele
     telegram = namedtuple("XbeeTelegram", telegram_data.keys())(*telegram_data.values())
     return telegram
 
-
-def create_message_from_data(addr64bit: str, data: str) -> Message:
-    """
-    The payload is assumed to be a name value pair.
-    Delimited with an equals and a new line between parameters.
-    The equals should be escaped with the \\=
-    """
-    payload_dict = {}
-
-    while data:
-        property, nl, data = data.partition('\n')
-        if property != None:
-            name, assign, value = property.partition('=')
-            value = value.replace('\\=','=')
-            payload_dict[name]=value
-        else:
-            break
-    ## TODO - This is OK to create an object from a dictionary but this
-    ##        is still not what is required. The serial_id and operation
-    ##        will come through but the payload will then be object properties.
-    ##        They need to be bundled.
-    message_tuple = namedtuple(payload_dict["operation"], payload_dict.keys())(*payload_dict.values())
-    payload_dict.pop('operation')
-    payload_dict.pop('serial_id')
-    message = messages.create_message(message_tuple.operation, message_tuple.serial_id, addr64bit, payload_dict)
-
-    return message
