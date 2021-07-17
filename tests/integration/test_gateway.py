@@ -93,7 +93,7 @@ class TestGateway:
 
             # Sensor to send READY.
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Ready('0013A20041AE49D4', '0013A20041AE49D4', None))
+            sensor.send_message( Ready('0013A200415D58CB', '0013A20041AE49D4', None))
             
             # Verify the Data request.
             logger.info('Waiting 10 seconds...')

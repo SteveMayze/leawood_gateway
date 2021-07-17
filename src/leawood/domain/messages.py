@@ -80,35 +80,6 @@ def create_message(operation, serial_id, addr64bit, payload) -> Message:
 
 
 
-def __create_message_from_data(addr64bit: str, data: str) -> Message:
-    """
-    The payload is assumed to be a name value pair.
-    Delimited with an equals and a new line between parameters.
-    The equals should be escaped with the \\=
-    """
-    payload_dict = {}
-
-    while data:
-        property, nl, data = data.partition('\n')
-        if property != None:
-            name, assign, value = property.partition('=')
-            value = value.replace('\\=','=')
-            payload_dict[name]=value
-        else:
-            break
-    ## TODO - This is OK to create an object from a dictionary but this
-    ##        is still not what is required. The serial_id and operation
-    ##        will come through but the payload will then be object properties.
-    ##        They need to be bundled.
-   #  message_tuple = namedtuple(payload_dict["operation"], payload_dict.keys())(*payload_dict.values())
-    operation = payload_dict.pop('operation')
-    serial_id = payload_dict.pop('serial_id')
-    message = create_message(operation, serial_id, addr64bit, payload_dict)
-
-    return message    
-
-
-    
 def create_message_from_data(addr64bit: str, data: str) -> Message:
     """
     The payload is in the format of a configuration file.

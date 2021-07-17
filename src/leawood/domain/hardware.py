@@ -100,9 +100,14 @@ class Sensor(Node):
         logger.info('Handling the DATAREQ event')
         pass
 
+    def handle_NodeIntro(self, message: Message):
+        logger.info('Handling the NODEINTRO event')
+        pass
+
     def get_handlers(self):
         MESSAGE_HANDLERS = {
             DataReq: self.handle_DataReq,
+            NodeIntro: self.handle_NodeIntro,
         }
         return MESSAGE_HANDLERS
 
