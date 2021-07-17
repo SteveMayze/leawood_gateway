@@ -13,7 +13,23 @@ from  digi.xbee import devices
 logger = logging.getLogger(__name__)
 
 class XBeeTelegram(Telegram):
-    pass
+    """
+    The XBeeTelegram represents the message to be written to the XBee modem device. The __repr__
+    method is setup to output the payload to be passed down to the modem.
+    """
+    def __init__(self, message: Message):
+       super(XBeeTelegram, self).__init__(message.serial_id, message.operation, message.payload)
+
+    def __repr__(self):
+        """
+        Returns the payload formatted to be transmitted by the underlying modem.
+        """
+        repr_str = f'[header]\nserial_id={self.serial_id}\noperation={self.operation}'
+        if self.payload:
+            repr_str = f'{repr_str}\n[data]{self.payload}'
+        return repr_str
+       
+
 
 class XBeeModem(Modem):
     """
@@ -43,7 +59,7 @@ class XBeeModem(Modem):
         ## TODO - Need to add the operation to the payload
         ##        and to convert this to a XBee format.
         xbee_telegram = create_telegram_from_message(self, message)
-        self.xbee.send_data(remote_device, str(xbee_telegram))
+        self.xbee.send_data(remote_device, repr(xbee_telegram))
 
     def register_receive_callback(self, callback: Callable):
         """
@@ -91,21 +107,7 @@ def create_telegram_from_message(modem: XBeeModem, message: Message) -> XBeeTele
     telegram contains a serial_id, an operation and a payload. The payload
     is a name value pair.
     """
-    data = message.payload
-    telegram_data = {}
-
-    while data:
-        property, nl, data = data.partition('\n')
-        if property != None:
-            name, assign, value = property.partition('=')
-            value = value.replace('\\=','=')
-            telegram_data[name]=value
-        else:
-            break
-    ## TODO - This is OK to create an object from a dictionary but this
-    ##        is still not what is required. The serial_id and operation
-    ##        will come through but the payload will then be object properties.
-    ##        They need to be bundled.
-    telegram = namedtuple("XbeeTelegram", telegram_data.keys())(*telegram_data.values())
+   
+    telegram = XBeeTelegram(message)
     return telegram
 
