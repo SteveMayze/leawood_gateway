@@ -6,14 +6,19 @@ Python 3.9+
 
 # Creating a local environment
 
-```
+```shell
 python3.9 -m venv .venv
 .venv\Scripts\activate
 ```
 
-```
+```shell
 pip intall -r requirements.txt
 pip install -e src
+```
+
+It may be necessary to reinstall the digi-xbee to pick up the serial package.
+```shell
+pip install --upgrade --force-reinstall digi-xbee
 ```
 
 # Running the tests
