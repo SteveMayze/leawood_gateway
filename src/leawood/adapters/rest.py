@@ -14,7 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class Rest(Repository):
-
+    """
+    The Rest class is an implmenetation of the Repository abstract class
+    to provide a REST implemenation of a persistence layer.
+    """
     def __init__(self, config):
         self.config = config
 
@@ -88,6 +91,6 @@ class Rest(Repository):
         response = self._http_post('devices', payload)
         return self.get_node(node.addr64bit)
 
-    def _post_sensor_data(self, messasge: Message):
+    def _post_sensor_data(self, node: Node, messasge: Message):
         pass
 

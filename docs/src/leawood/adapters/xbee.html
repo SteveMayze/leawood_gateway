@@ -33,6 +33,9 @@
             <li>
                     <a class="class" href="#XBeeTelegram">XBeeTelegram</a>
                             <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#XBeeTelegram.__init__">XBeeTelegram</a>
+                        </li>
                 </ul>
 
             </li>
@@ -63,9 +66,6 @@
             <li>
                     <a class="function" href="#create_telegram_from_message">create_telegram_from_message</a>
             </li>
-            <li>
-                    <a class="function" href="#create_message_from_data">create_message_from_data</a>
-            </li>
     </ul>
 
 
@@ -89,7 +89,7 @@
 
 <span class="kn">from</span> <span class="nn">digi.xbee.models.message</span> <span class="kn">import</span> <span class="n">XBeeMessage</span>
 <span class="kn">from</span> <span class="nn">leawood.domain.hardware</span> <span class="kn">import</span> <span class="n">Modem</span>
-<span class="kn">from</span> <span class="nn">leawood.domain.messages</span> <span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">Telegram</span>
+<span class="kn">from</span> <span class="nn">leawood.domain.messages</span> <span class="kn">import</span> <span class="n">Data</span><span class="p">,</span> <span class="n">DataAck</span><span class="p">,</span> <span class="n">DataReq</span><span class="p">,</span> <span class="n">IntroAck</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">NodeIntro</span><span class="p">,</span> <span class="n">NodeIntroReq</span><span class="p">,</span> <span class="n">Ready</span><span class="p">,</span> <span class="n">Telegram</span>
 <span class="kn">from</span> <span class="nn">leawood.domain</span> <span class="kn">import</span> <span class="n">messages</span>
 <span class="kn">from</span> <span class="nn">leawood.config</span> <span class="kn">import</span> <span class="n">Config</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -99,7 +99,23 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">XBeeTelegram</span><span class="p">(</span><span class="n">Telegram</span><span class="p">):</span>
-    <span class="k">pass</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The XBeeTelegram represents the message to be written to the XBee modem device. The __repr__</span>
+<span class="sd">    method is setup to output the payload to be passed down to the modem.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
+       <span class="nb">super</span><span class="p">(</span><span class="n">XBeeTelegram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">serial_id</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">operation</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the payload formatted to be transmitted by the underlying modem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">repr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;[header]</span><span class="se">\n</span><span class="s1">serial_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">serial_id</span><span class="si">}</span><span class="se">\n</span><span class="s1">operation=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">operation</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="p">:</span>
+            <span class="n">repr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repr_str</span><span class="si">}</span><span class="se">\n</span><span class="s1">[data]</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">repr_str</span>
+       
+
 
 <span class="k">class</span> <span class="nc">XBeeModem</span><span class="p">(</span><span class="n">Modem</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -128,9 +144,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Sending from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">get_64bit_addr</span><span class="p">()</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">addr64bit</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1">## TODO - Need to add the operation to the payload</span>
         <span class="c1">##        and to convert this to a XBee format.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">remote_device</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="p">))</span>
+        <span class="n">xbee_telegram</span> <span class="o">=</span> <span class="n">create_telegram_from_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;message </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">xbee_telegram</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">remote_device</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">xbee_telegram</span><span class="p">))</span>
 
-    <span class="c1">##</span>
     <span class="k">def</span> <span class="nf">register_receive_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Registers the fuction to be called when the XBee module recevies a</span>
@@ -151,7 +168,7 @@
         <span class="n">address</span> <span class="o">=</span> <span class="n">xbee_message</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">get_64bit_addr</span><span class="p">()</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">xbee_message</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;XBee received message </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">create_message_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">messages</span><span class="o">.</span><span class="n">create_message_from_data</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">address</span><span class="p">),</span> <span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_receive_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
 
@@ -161,6 +178,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">is_open</span><span class="p">()</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">set_sync_ops_timeout</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -170,32 +188,16 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 
-<span class="k">def</span> <span class="nf">create_telegram_from_message</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">XBeeTelegram</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span>
-    <span class="n">telegram_data</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">while</span> <span class="n">data</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">property</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">property</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span><span class="p">,</span> <span class="n">assign</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;\=&#39;</span><span class="p">,</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
-            <span class="n">telegram_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">break</span>
-    <span class="c1">## TODO - This is OK to create an object from a dictionary but this</span>
-    <span class="c1">##        is still not what is required. The serial_id and operation</span>
-    <span class="c1">##        will come through but the payload will then be object properties.</span>
-    <span class="c1">##        They need to be bundled.</span>
-    <span class="n">telegram</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;XbeeTelegram&quot;</span><span class="p">,</span> <span class="n">telegram_data</span><span class="o">.</span><span class="n">keys</span><span class="p">,</span> <span class="n">telegram_data</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">telegram</span>
-
-<span class="k">def</span> <span class="nf">create_message_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">create_telegram_from_message</span><span class="p">(</span><span class="n">modem</span><span class="p">:</span> <span class="n">XBeeModem</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">XBeeTelegram</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The incoming payload is assumed to be a name value pair.</span>
-<span class="sd">    Delimited with an equals and a new line between parameters.</span>
-<span class="sd">    The equals should be escaped with the \=</span>
+<span class="sd">    A message needs to be converted to a XBeeTelegram type. This is the</span>
+<span class="sd">    payload of the XBeeMessage to go out to the target device. The basic </span>
+<span class="sd">    telegram contains a serial_id, an operation and a payload. The payload</span>
+<span class="sd">    is a name value pair.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="kc">None</span>
+   
+    <span class="n">telegram</span> <span class="o">=</span> <span class="n">XBeeTelegram</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">telegram</span>
 </pre></div>
 
         </details>
@@ -213,21 +215,53 @@
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">XBeeTelegram</span><span class="p">(</span><span class="n">Telegram</span><span class="p">):</span>
-    <span class="k">pass</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The XBeeTelegram represents the message to be written to the XBee modem device. The __repr__</span>
+<span class="sd">    method is setup to output the payload to be passed down to the modem.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
+       <span class="nb">super</span><span class="p">(</span><span class="n">XBeeTelegram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">serial_id</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">operation</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the payload formatted to be transmitted by the underlying modem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">repr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;[header]</span><span class="se">\n</span><span class="s1">serial_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">serial_id</span><span class="si">}</span><span class="se">\n</span><span class="s1">operation=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">operation</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="p">:</span>
+            <span class="n">repr_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repr_str</span><span class="si">}</span><span class="se">\n</span><span class="s1">[data]</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">repr_str</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Telegram(serial_id: str, operation: str, payload: str)</p>
+            <div class="docstring"><p>The XBeeTelegram represents the message to be written to the XBee modem device. The __repr__
+method is setup to output the payload to be passed down to the modem.</p>
 </div>
 
 
+                            <div id="XBeeTelegram.__init__" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#XBeeTelegram.__init__">#&nbsp;&nbsp</a>
+
+        
+            <span class="name">XBeeTelegram</span><span class="signature">(message: leawood.domain.messages.Message)</span>
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
+       <span class="nb">super</span><span class="p">(</span><span class="n">XBeeTelegram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">serial_id</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">operation</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+</pre></div>
+
+        </details>
+
+    
+
+                            </div>
                             <div class="inherited">
                                 <h5>Inherited Members</h5>
                                 <dl>
                                     <div><dt>leawood.domain.messages.Telegram</dt>
-                                <dd id="XBeeTelegram.__init__" class="function">Telegram</dd>
-                <dd id="XBeeTelegram.serial_id" class="variable">serial_id</dd>
+                                <dd id="XBeeTelegram.serial_id" class="variable">serial_id</dd>
                 <dd id="XBeeTelegram.operation" class="variable">operation</dd>
                 <dd id="XBeeTelegram.payload" class="variable">payload</dd>
 
@@ -273,9 +307,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Sending from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">get_64bit_addr</span><span class="p">()</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">addr64bit</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1">## TODO - Need to add the operation to the payload</span>
         <span class="c1">##        and to convert this to a XBee format.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">remote_device</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="p">))</span>
+        <span class="n">xbee_telegram</span> <span class="o">=</span> <span class="n">create_telegram_from_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;message </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">xbee_telegram</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">remote_device</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">xbee_telegram</span><span class="p">))</span>
 
-    <span class="c1">##</span>
     <span class="k">def</span> <span class="nf">register_receive_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Registers the fuction to be called when the XBee module recevies a</span>
@@ -296,7 +331,7 @@
         <span class="n">address</span> <span class="o">=</span> <span class="n">xbee_message</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">get_64bit_addr</span><span class="p">()</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">xbee_message</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;XBee received message </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">create_message_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">messages</span><span class="o">.</span><span class="n">create_message_from_data</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">address</span><span class="p">),</span> <span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_receive_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
 
@@ -306,6 +341,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">is_open</span><span class="p">()</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">set_sync_ops_timeout</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -372,12 +408,17 @@ to the actual physical XBee modem module.</p>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Sending from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">get_64bit_addr</span><span class="p">()</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">addr64bit</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1">## TODO - Need to add the operation to the payload</span>
         <span class="c1">##        and to convert this to a XBee format.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">remote_device</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="p">))</span>
+        <span class="n">xbee_telegram</span> <span class="o">=</span> <span class="n">create_telegram_from_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;message </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">xbee_telegram</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">send_data</span><span class="p">(</span><span class="n">remote_device</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">xbee_telegram</span><span class="p">))</span>
 </pre></div>
 
         </details>
 
-    
+            <div class="docstring"><p>Sends a message via the implemented modem to a device
+that is addressed within the message.</p>
+</div>
+
 
                             </div>
                             <div id="XBeeModem.register_receive_callback" class="classattr">
@@ -431,7 +472,7 @@ callback.</p>
         <span class="n">address</span> <span class="o">=</span> <span class="n">xbee_message</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">get_64bit_addr</span><span class="p">()</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">xbee_message</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;XBee received message </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">create_message_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">messages</span><span class="o">.</span><span class="n">create_message_from_data</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">address</span><span class="p">),</span> <span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_receive_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </pre></div>
 
@@ -460,6 +501,7 @@ type and pass this to the callback.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">is_open</span><span class="p">()</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xbee</span><span class="o">.</span><span class="n">set_sync_ops_timeout</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -501,61 +543,31 @@ type and pass this to the callback.</p>
         
             <span class="def">def</span>
             <span class="name">create_telegram_from_message</span><span class="signature">(
+    modem: <a href="#XBeeModem">src.leawood.adapters.xbee.XBeeModem</a>,
     message: leawood.domain.messages.Message
 ) -&gt; <a href="#XBeeTelegram">src.leawood.adapters.xbee.XBeeTelegram</a></span>:
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">create_telegram_from_message</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">XBeeTelegram</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span>
-    <span class="n">telegram_data</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">while</span> <span class="n">data</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">property</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">property</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span><span class="p">,</span> <span class="n">assign</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;\=&#39;</span><span class="p">,</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
-            <span class="n">telegram_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">break</span>
-    <span class="c1">## TODO - This is OK to create an object from a dictionary but this</span>
-    <span class="c1">##        is still not what is required. The serial_id and operation</span>
-    <span class="c1">##        will come through but the payload will then be object properties.</span>
-    <span class="c1">##        They need to be bundled.</span>
-    <span class="n">telegram</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;XbeeTelegram&quot;</span><span class="p">,</span> <span class="n">telegram_data</span><span class="o">.</span><span class="n">keys</span><span class="p">,</span> <span class="n">telegram_data</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">create_telegram_from_message</span><span class="p">(</span><span class="n">modem</span><span class="p">:</span> <span class="n">XBeeModem</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">XBeeTelegram</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A message needs to be converted to a XBeeTelegram type. This is the</span>
+<span class="sd">    payload of the XBeeMessage to go out to the target device. The basic </span>
+<span class="sd">    telegram contains a serial_id, an operation and a payload. The payload</span>
+<span class="sd">    is a name value pair.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+   
+    <span class="n">telegram</span> <span class="o">=</span> <span class="n">XBeeTelegram</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">telegram</span>
 </pre></div>
 
         </details>
 
-    
-
-                </section>
-                <section id="create_message_from_data">
-                            <div class="attr function"><a class="headerlink" href="#create_message_from_data">#&nbsp;&nbsp</a>
-
-        
-            <span class="def">def</span>
-            <span class="name">create_message_from_data</span><span class="signature">(data: str) -&gt; leawood.domain.messages.Message</span>:
-    </div>
-
-                <details>
-            <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">create_message_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The incoming payload is assumed to be a name value pair.</span>
-<span class="sd">    Delimited with an equals and a new line between parameters.</span>
-<span class="sd">    The equals should be escaped with the \=</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="kc">None</span>
-</pre></div>
-
-        </details>
-
-            <div class="docstring"><p>The incoming payload is assumed to be a name value pair.
-Delimited with an equals and a new line between parameters.
-The equals should be escaped with the \=</p>
+            <div class="docstring"><p>A message needs to be converted to a XBeeTelegram type. This is the
+payload of the XBeeMessage to go out to the target device. The basic 
+telegram contains a serial_id, an operation and a payload. The payload
+is a name value pair.</p>
 </div>
 
 

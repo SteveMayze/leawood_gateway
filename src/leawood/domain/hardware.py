@@ -61,7 +61,11 @@ class Modem(abc.ABC):
 
 
 class Sensor(Node):
-
+    """
+    This sensor is an implementatoin of a Node and represents a pseudo sensor in that
+    it is mainly uses in the testing. This also servers as a model for the actual physical 
+    sensors to be built and connected to the gateway.
+    """
     def __init__(self, message_bus: MessageBus = None, modem: Modem = None):
         self.message_bus = message_bus
         self.modem = modem
@@ -119,7 +123,11 @@ class Sensor(Node):
 
 
 class Gateway(Node):
-
+    """
+    The Gateway acts as a coordinator and recevies messages from a node
+    and passes them through to the server. The gateway is responsible for 
+    retrieving the metadata from a node if this is a newly connected device.
+    """
     def __init__(self,  message_bus: MessageBus, repository: Repository, modem: Modem):
         self.message_bus = message_bus
         self.modem = modem

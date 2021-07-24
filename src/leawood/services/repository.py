@@ -5,11 +5,19 @@ from leawood.domain.messages import Message
 from leawood.domain.model import Node
 
 class RepositoryError(Exception):
+    """
+    An exception to indicate an persistence error
+    """
     def __init__(self, message: Message, args: object) -> None:
         super().__init__(*args)
         self.message = message
 
 class Repository(abc.ABC):
+    """"
+    The respository is a abstract class to represent some type of
+    persistence layer. This class is agnostic to the actual physical
+    storage layer.
+    """
 
     node_cache = {}
 

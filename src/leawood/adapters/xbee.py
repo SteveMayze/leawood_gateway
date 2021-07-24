@@ -26,7 +26,7 @@ class XBeeTelegram(Telegram):
         """
         repr_str = f'[header]\nserial_id={self.serial_id}\noperation={self.operation}'
         if self.payload:
-            repr_str = f'{repr_str}\n[data]{self.payload}'
+            repr_str = f'{repr_str}\n[data]\n{self.payload}'
         return repr_str
        
 
@@ -59,6 +59,7 @@ class XBeeModem(Modem):
         ## TODO - Need to add the operation to the payload
         ##        and to convert this to a XBee format.
         xbee_telegram = create_telegram_from_message(self, message)
+        logger.info(f'message {repr(xbee_telegram)}')
         self.xbee.send_data(remote_device, repr(xbee_telegram))
 
     def register_receive_callback(self, callback: Callable):
@@ -91,6 +92,7 @@ class XBeeModem(Modem):
         """
         if( self.xbee is not None and self.xbee.is_open() == False):
             self.xbee.open()
+            self.xbee.set_sync_ops_timeout(10)
 
     def close(self):
         """

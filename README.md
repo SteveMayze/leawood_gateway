@@ -21,7 +21,7 @@ It may be necessary to reinstall the digi-xbee to pick up the serial package.
 pip install --upgrade --force-reinstall digi-xbee
 ```
 
-# Running the tests
+## Running the tests
 
 ```
 pytest
@@ -31,6 +31,7 @@ Running the tests with logging
 ```
 pytest -v -s --log-cli-level INFO
 ```
+## Generating the Documentation
 
 # Use Cases
 
