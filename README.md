@@ -32,6 +32,10 @@ Running the tests with logging
 pytest -v -s --log-cli-level INFO
 ```
 ## Generating the Documentation
+ 
+ ```
+ pdoc -o .\docs .\src\leawood
+```
 
 # Use Cases
 
