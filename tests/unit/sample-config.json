@@ -1,0 +1,13 @@
+{
+    "username": "REST_USER",
+    "password": "PASSWORD-NOT-SET",
+    "rest":  "https://oci-rest.com/ords/leawood_dev/api/1.0",
+    "certpath": "ssh",
+    "cacert": "cert-autha.crt",
+    "clientcrt": "device1.crt",
+    "clientkey": "device1.key",
+    "mqttserver": "127.0.0.1",
+    "mqttport": "8883",
+    "sleeptime": 5
+
+}
