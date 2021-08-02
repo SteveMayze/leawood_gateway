@@ -1,11 +1,11 @@
 
 
 from dataclasses import dataclass
-from typing import Final, TypedDict
+from typing import TypedDict
 from collections import namedtuple
-import configparser
-import io
+from leawood.domain import token
 import logging
+import struct
 
 logger = logging.getLogger(__name__)
 
@@ -77,35 +77,85 @@ def create_message(operation, serial_id, addr64bit, payload) -> Message:
         'NODEINTROACK': IntroAck( serial_id, addr64bit, payload),
     }[operation]
 
+def handle_data_message(telegram: TypedDict):
+    props = bytearray()
+    for p in telegram.items():
+        logger.info(f'Tokenising {p}')
+        props.append(token.property_group[p[0]])
+        props.extend(struct.pack('f', p[1]))
+    return props
+
+def handle_nodeintro_message(telegram: TypedDict):
+    return None
 
 
 
-def create_message_from_data(addr64bit: str, data: str) -> Message:
+def tokenise(telegram: Telegram):
     """
-    The payload is in the format of a configuration file.
+    Parses the Telegram type and builds a bytearray of the elements
+    so that this will be a reduced form for transmission.
     """
-    payload_buf = io.StringIO(data)
-    cfg = configparser.ConfigParser()
-    cfg.read_file(payload_buf)
+    logger.info(f'telegram {telegram}')
+    # Each type of Telegram ie message will have specific content. it would be
+    # nice to be able to create the various formats in a simple way.
+    # https://docs.python.org/3.9/library/ctypes.html#ctypes.c_uint
+    datastream = bytearray()
+    datastream.append(token.header_group['operation'])
+    datastream.append(token.operation_tokens[telegram.operation])
+    datastream.append(token.header_group['serial_id'])
+    datastream.extend(bytearray.fromhex(telegram.serial_id))
 
-    # operation = payload_dict.pop('operation')
-    # serial_id = payload_dict.pop('serial_id')
+    properties = None
+    if 'DATA' == telegram.operation:
+        properties = handle_data_message(telegram.payload)
+    if 'NODEINTRO' == telegram.operation: 
+        properties = handle_nodeintro_message(telegram.payload)
 
-    header = dict(cfg.items('header'))
-    sections = cfg.sections()
-    payload_dict = {}
-    for section in sections:
-        properties = dict(cfg.items(section))
-        logger.info(f'section: {section}: properties: {properties}')
-        if section.startswith('mdp '):
-            md = dict(cfg.items(section))
-            section = section.replace('mdp ', '', 1)
-            payload_dict[section] = md
-        elif section == 'data':
-            data = dict(cfg.items(section))
-            payload_dict = data
+    if properties:
+        datastream.extend(properties)
+    return datastream
 
 
-    message = create_message(header['operation'], header['serial_id'], addr64bit, payload_dict)
+def detokenise(datastream: bytearray) -> TypedDict:
+    """
+    Rehydrates a Telegrm from a byte array of tokens.
+    """
+    logger.info(f'tokens {datastream.hex()}')
+    payload_data = {}
+    token_0 = datastream[0:1][0]
+    operation = None
+    if token_0 == token.header_group['operation']:
+        payload_data['operation'] = token.operation_tokens_[datastream[1:2][0]]
+    token_0 = datastream[2:3][0]
+    if token_0 == token.header_group['serial_id']:
+        payload_data['serial_id'] = datastream[3:11].hex()
 
+    idx = 1
+    data = datastream[11:]
+    while len(data) > 0:
+        if payload_data['operation'] == 'DATA':
+            prop, val = (data[0:1], data[1:6])
+            payload_data[token.property_group_[prop[0]]] = struct.unpack('f', val)[0]
+
+        if payload_data['operation'] == 'NODEINTRO':
+            prop, val = (data[0:1], data[1,2])
+            payload_data[f'p{idx}'] = token.property_group_[prop[0]]
+            idx += 1
+        data = data[6:]
+    return payload_data
+
+
+def create_message_from_data(addr64bit: str, data: bytearray) -> Message:
+    """
+    The payload is a byte array of the mandatory (header) properties
+    and the optional properties to support the operaiton.
+    """
+    payload_dict = detokenise(data)
+    message = create_message(payload_dict.pop('operation'), payload_dict.pop('serial_id'), addr64bit, payload_dict)
     return message    
+
+def transform_telegram_to_bytearray(telegram: Telegram) -> bytearray:
+    """
+    Converts the dict payload into a stream of bytes
+    """
+    return tokenise(telegram)

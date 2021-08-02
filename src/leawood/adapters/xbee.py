@@ -1,9 +1,9 @@
-from collections import namedtuple
-from typing import Callable
 
+
+from typing import Callable
 from digi.xbee.models.message import XBeeMessage
 from leawood.domain.hardware import Modem
-from leawood.domain.messages import Data, DataAck, DataReq, IntroAck, Message, NodeIntro, NodeIntroReq, Ready, Telegram
+from leawood.domain.messages import  Message, Telegram
 from leawood.domain import messages
 from leawood.config import Config
 import logging
@@ -11,6 +11,8 @@ from  digi.xbee import devices
 
 
 logger = logging.getLogger(__name__)
+
+
 
 class XBeeTelegram(Telegram):
     """
@@ -20,15 +22,9 @@ class XBeeTelegram(Telegram):
     def __init__(self, message: Message):
        super(XBeeTelegram, self).__init__(message.serial_id, message.operation, message.payload)
 
-    def __repr__(self):
-        """
-        Returns the payload formatted to be transmitted by the underlying modem.
-        """
-        repr_str = f'[header]\nserial_id={self.serial_id}\noperation={self.operation}'
-        if self.payload:
-            repr_str = f'{repr_str}\n[data]\n{self.payload}'
-        return repr_str
-       
+    def as_bytearray(self) -> bytearray:
+        telegram = messages.transform_telegram_to_bytearray(self)
+        return telegram
 
 
 class XBeeModem(Modem):
