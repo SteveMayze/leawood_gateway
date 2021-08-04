@@ -126,7 +126,6 @@ def test_receive_intro_message(gateway, sensor, modem_message_builder):
         'serial_id': sensor.serial_id, 
         'domain': 'power', 
         'class': 'sensor', 
-        'name': 'solar', 
         'p1': 'bus_voltage',
         'p2': 'shunt_voltage',
         'p3': 'load_current'

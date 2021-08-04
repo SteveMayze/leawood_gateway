@@ -56,7 +56,7 @@ class XBeeModem(Modem):
         ##        and to convert this to a XBee format.
         xbee_telegram = create_telegram_from_message(self, message)
         logger.info(f'message {repr(xbee_telegram)}')
-        self.xbee.send_data(remote_device, repr(xbee_telegram))
+        self.xbee.send_data(remote_device, xbee_telegram.as_bytearray())
 
     def register_receive_callback(self, callback: Callable):
         """
@@ -76,8 +76,8 @@ class XBeeModem(Modem):
         type and pass this to the callback.
         """
         address = xbee_message.remote_device.get_64bit_addr()
-        data = xbee_message.data.decode('utf8')
-        logger.info(f'XBee received message {data}')
+        data = xbee_message.data
+        logger.info(f'XBee received message {data.hex()}')
         message = messages.create_message_from_data(str(address), data)
         self._receive_message(message)
 

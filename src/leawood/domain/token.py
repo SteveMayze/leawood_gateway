@@ -62,6 +62,12 @@
     3 properties = 7 + 5x3 = 22 bytes.
 """
 
+import logging
+import struct
+from typing import TypedDict
+
+
+logger = logging.getLogger(__name__)
 
 US = 0x1F
 RS = 0x1E
@@ -69,55 +75,122 @@ STX = 0x02
 
 
 HEADER_GROUP = 0x10
+OPERATION_GROUP = 0x20
+PROPERTY_GROUP = 0x30
+METADATA_GROUP = 0x04
 
-header_group = {
+telegram_token = {
+
     "operation": HEADER_GROUP | 0x01,
     "serial_id": HEADER_GROUP | 0x02,
     "domain": HEADER_GROUP | 0x03,
     "class": HEADER_GROUP | 0x04,
-}
-header_group_ = {
-    HEADER_GROUP | 0x01 : "operation",
-    HEADER_GROUP | 0x02 : "serial_id", 
-    HEADER_GROUP | 0x03: "domain",
-    HEADER_GROUP | 0x04: "class",
-}
 
-PROPERTY_GROUP = 0x020
+    "p": PROPERTY_GROUP | 0x00,
+    "bus_voltage": PROPERTY_GROUP | 0x01,
+    "shunt_voltage":  PROPERTY_GROUP | 0x02,
+    "load_current":  PROPERTY_GROUP | 0x03,
 
-METADATA_GROUP = 0x020
+    "READY": OPERATION_GROUP | 0x01,
+    "DATAREQ": OPERATION_GROUP | 0x02,
+    "DATA": OPERATION_GROUP | 0x03,
+    "DATAACK": OPERATION_GROUP | 0x04,
+    "NODEINTROREQ": OPERATION_GROUP | 0x05,
+    "NODEINTRO": OPERATION_GROUP | 0x06,
+    "NODEINTROACK": OPERATION_GROUP | 0x07,
 
-property_group = {
-    "bus_voltage": 0x01,
-    "shunt_voltage":  0x02,
-    "load_current":  0x03,
-}
-
-property_group_ = {
-    0x01: "bus_voltage",
-    0x02: "shunt_voltage",
-    0x03: "load_current",
-    0x04: "level",
+    'power': METADATA_GROUP | 0x01,
+    'capacity': METADATA_GROUP | 0x04,
+    'sensor': METADATA_GROUP | 0x03,
 }
 
-operation_tokens = {
-    "READY": 0x01,
-    "DATAREQ": 0x02,
-    "DATA": 0x03,
-    "DATAACK": 0x04,
-    "NODEINTROREQ": 0x05,
-    "NODEINTRO": 0x06,
-    "NODEINTROACK": 0x07,
-}
+token_telegram = {}
+for name, token in telegram_token.items():
+    token_telegram[token] = name
 
 
-operation_tokens_ = {
-    0x01: "READY",
-    0x02: "DATAREQ",
-    0x03: "DATA",
-    0x04: "DATAACK",
-    0x05: "NODEINTROREQ",
-    0x06: "NODEINTRO",
-    0x07: "NODEINTROACK",
-}
 
+def handle_data_message(telegram: TypedDict):
+    props = bytearray()
+    for p in telegram.items():
+        logger.info(f'Tokenising {p}')
+        props.append(telegram_token[p[0]])
+        props.extend(struct.pack('f', p[1]))
+    return props
+
+def handle_nodeintro_message(telegram: TypedDict):
+    props = bytearray()
+    for p, label in telegram.items():
+        logger.info(f'Tokenising {p}: {label}')
+        props.append(telegram_token['p'])
+        props.append(telegram_token[label])
+    return props
+
+
+
+def tokenise(operation: str, serial_id: str, payload: TypedDict):
+    """
+    Parses the Telegram type and builds a bytearray of the elements
+    so that this will be a reduced form for transmission.
+    """
+    logger.info(f'telegram operation {operation}, seria_id {serial_id} payload {payload}')
+    # Each type of Telegram ie message will have specific content. it would be
+    # nice to be able to create the various formats in a simple way.
+    # https://docs.python.org/3.9/library/ctypes.html#ctypes.c_uint
+    datastream = bytearray()
+    datastream.append(telegram_token['operation'])
+    datastream.append(telegram_token[operation])
+    datastream.append(telegram_token['serial_id'])
+    datastream.extend(bytearray.fromhex(serial_id))
+
+    properties = None
+    if 'DATA' == operation:
+        properties = handle_data_message(payload)
+    if 'NODEINTRO' == operation: 
+        datastream.append(telegram_token['domain'])
+        datastream.append(telegram_token[payload.pop('domain')])
+        datastream.append(telegram_token['class'])
+        datastream.append(telegram_token[payload.pop('class')])
+        properties = handle_nodeintro_message(payload)
+
+    if properties:
+        datastream.extend(properties)
+    return datastream
+
+
+def detokenise(datastream: bytearray) -> TypedDict:
+    """
+    Rehydrates a Telegrm from a byte array of tokens.
+    """
+    logger.info(f'tokens {datastream.hex()}')
+    payload_data = {}
+    token_0 = datastream[0:1][0]
+    operation = None
+    if token_0 == telegram_token['operation']:
+        payload_data['operation'] = token_telegram[datastream[1:2][0]]
+    token_0 = datastream[2:3][0]
+    if token_0 == telegram_token['serial_id']:
+        payload_data['serial_id'] = datastream[3:11].hex()
+
+    idx = 1
+    data = datastream[11:]
+    if payload_data['operation'] == 'NODEINTRO':
+        prop, val = (data[0:1], data[1:2]) ## domain
+        payload_data[token_telegram[prop[0]]] = token_telegram[val[0]]
+
+        prop, val = (data[2:3], data[3:4]) ## class
+        payload_data[token_telegram[prop[0]]] = token_telegram[val[0]]
+        data = data[4:]
+
+    while len(data) > 0:
+        if payload_data['operation'] == 'DATA':
+            prop, val = (data[0:1], data[1:5])
+            payload_data[token_telegram[prop[0]]] = struct.unpack('f', val)[0]
+            data = data[5:]
+
+        if payload_data['operation'] == 'NODEINTRO':
+            prop, val = (data[0:1], data[1:2])
+            payload_data[f'p{idx}'] = token_telegram[val[0]]
+            idx += 1
+            data = data[2:]
+    return payload_data
