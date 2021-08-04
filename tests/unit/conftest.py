@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Callable, TypedDict
-from leawood.domain.messages import Message
+from leawood.domain.messages import Message, Telegram
 from leawood.domain import messages
 from leawood.domain.model import Node
 from leawood.domain.hardware import Gateway, Modem, Sensor
@@ -45,11 +45,16 @@ def wait_for_runnning_state(worker, state):
 
 @dataclass
 class FakeMessage():
+    """
+    This represents the raw message sent and received by the Modem.
+    The payload should contain at least the serial_id and operation
+    plus an optional data or metdata section for the additional 
+    information to support the operation.
+    The modem implementation should transform this into a Message 
+    object.
+    """
     addr64bit:str
-    payload: str
-    # def __init__(self, addr64bit, payload) -> None:
-    #     self.addr64bit = addr64bit
-    #     self.payload = payload
+    payload: bytearray
 
 
 class FakeModem(Modem):
@@ -98,14 +103,17 @@ class FakeRepository(Repository):
         pass
 
 
-class MessageBuilder():
-    def create_message(self, addr64bit, payload):
-        return FakeMessage(addr64bit, payload)
+class ModemMessageBuilder():
+    def create_modem_message(self, addr64bit: str, payload: TypedDict):
+        # TODO - convert the data into a bytearray!
+        telegram = Telegram(payload.pop('serial_id'), payload.pop('operation'), payload)
+        data = messages.transform_telegram_to_bytearray(telegram)
+        return FakeMessage(addr64bit, data)
 
 
 @pytest.fixture
-def message_builder():
- return MessageBuilder()
+def modem_message_builder():
+ return ModemMessageBuilder()
 
 
 @pytest.fixture
@@ -149,7 +157,7 @@ def gateway(message_bus, repository, modem):
 @pytest.fixture(scope='function')
 def sensor():
     sensor = Sensor(None, None)
-    sensor.serial_id = 'ABCD'
-    sensor.addr64bit = "00000001"
+    sensor.serial_id = '0102030405060708'
+    sensor.addr64bit = "090a0b0c0d0e0f10"
     return sensor
 

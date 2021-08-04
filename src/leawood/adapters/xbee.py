@@ -1,9 +1,9 @@
-from collections import namedtuple
-from typing import Callable
 
+
+from typing import Callable
 from digi.xbee.models.message import XBeeMessage
 from leawood.domain.hardware import Modem
-from leawood.domain.messages import Data, DataAck, DataReq, IntroAck, Message, NodeIntro, NodeIntroReq, Ready, Telegram
+from leawood.domain.messages import  Message, Telegram
 from leawood.domain import messages
 from leawood.config import Config
 import logging
@@ -11,6 +11,8 @@ from  digi.xbee import devices
 
 
 logger = logging.getLogger(__name__)
+
+
 
 class XBeeTelegram(Telegram):
     """
@@ -20,15 +22,9 @@ class XBeeTelegram(Telegram):
     def __init__(self, message: Message):
        super(XBeeTelegram, self).__init__(message.serial_id, message.operation, message.payload)
 
-    def __repr__(self):
-        """
-        Returns the payload formatted to be transmitted by the underlying modem.
-        """
-        repr_str = f'[header]\nserial_id={self.serial_id}\noperation={self.operation}'
-        if self.payload:
-            repr_str = f'{repr_str}\n[data]\n{self.payload}'
-        return repr_str
-       
+    def as_bytearray(self) -> bytearray:
+        telegram = messages.transform_telegram_to_bytearray(self)
+        return telegram
 
 
 class XBeeModem(Modem):
@@ -60,7 +56,7 @@ class XBeeModem(Modem):
         ##        and to convert this to a XBee format.
         xbee_telegram = create_telegram_from_message(self, message)
         logger.info(f'message {repr(xbee_telegram)}')
-        self.xbee.send_data(remote_device, repr(xbee_telegram))
+        self.xbee.send_data(remote_device, xbee_telegram.as_bytearray())
 
     def register_receive_callback(self, callback: Callable):
         """
@@ -80,8 +76,8 @@ class XBeeModem(Modem):
         type and pass this to the callback.
         """
         address = xbee_message.remote_device.get_64bit_addr()
-        data = xbee_message.data.decode('utf8')
-        logger.info(f'XBee received message {data}')
+        data = xbee_message.data
+        logger.info(f'XBee received message {data.hex()}')
         message = messages.create_message_from_data(str(address), data)
         self._receive_message(message)
 

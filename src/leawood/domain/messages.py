@@ -1,11 +1,11 @@
 
 
 from dataclasses import dataclass
-from typing import Final, TypedDict
+from typing import TypedDict
 from collections import namedtuple
-import configparser
-import io
+from leawood.domain import token
 import logging
+import struct
 
 logger = logging.getLogger(__name__)
 
@@ -78,34 +78,17 @@ def create_message(operation, serial_id, addr64bit, payload) -> Message:
     }[operation]
 
 
-
-
-def create_message_from_data(addr64bit: str, data: str) -> Message:
+def create_message_from_data(addr64bit: str, data: bytearray) -> Message:
     """
-    The payload is in the format of a configuration file.
+    The payload is a byte array of the mandatory (header) properties
+    and the optional properties to support the operaiton.
     """
-    payload_buf = io.StringIO(data)
-    cfg = configparser.ConfigParser()
-    cfg.read_file(payload_buf)
-
-    # operation = payload_dict.pop('operation')
-    # serial_id = payload_dict.pop('serial_id')
-
-    header = dict(cfg.items('header'))
-    sections = cfg.sections()
-    payload_dict = {}
-    for section in sections:
-        properties = dict(cfg.items(section))
-        logger.info(f'section: {section}: properties: {properties}')
-        if section.startswith('mdp '):
-            md = dict(cfg.items(section))
-            section = section.replace('mdp ', '', 1)
-            payload_dict[section] = md
-        elif section == 'data':
-            data = dict(cfg.items(section))
-            payload_dict = data
-
-
-    message = create_message(header['operation'], header['serial_id'], addr64bit, payload_dict)
-
+    payload_dict = token.detokenise(data)
+    message = create_message(payload_dict.pop('operation'), payload_dict.pop('serial_id'), addr64bit, payload_dict)
     return message    
+
+def transform_telegram_to_bytearray(telegram: Telegram) -> bytearray:
+    """
+    Converts the dict payload into a stream of bytes
+    """
+    return token.tokenise(telegram.operation, telegram.serial_id, telegram.payload)

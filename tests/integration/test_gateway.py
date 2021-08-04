@@ -123,9 +123,11 @@ class TestGateway:
             # going to work. the value labels need to be tokenised. 
             # This poses a problem for the metadata to define the information
             # from a senser node.
-            payload = """
-            bus_voltage=10.5
-            """
+            payload = {
+                "bus_voltage": 10.5,
+                "load_current": 3.2
+            }
+            
             sensor.send_message(Data('0013A200415D58CB', '0013A20041AE49D4', payload))
             time.sleep(5)
 
@@ -149,7 +151,7 @@ class TestGateway:
             sensor.close()
 
 
-    def _test_sensor_send(self, config, sensor):
+    def test_sensor_send(self, config, sensor):
         """
         A rough test to send a message without verification. This is used in conjunction
         with the XCTU tool to verify the physical messages sent. 
@@ -162,10 +164,11 @@ class TestGateway:
             sensor.send_message( Ready('0013A200415D58CB', '0013A20041AE49D4', None))
             time.sleep(5)
 
-            payload = """
-            bus_voltage=10.5
-            load_current=3.2
-            """
+            payload = {
+                "bus_voltage": 10.5,
+                "shunt_voltage": 0.85,
+                "load_current": 3.2
+            }
             logger.info('Sending Ready to the gateway node')
             sensor.send_message( Data('0013A200415D58CB', '0013A20041AE49D4', payload))
 
