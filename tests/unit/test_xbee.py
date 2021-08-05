@@ -2,7 +2,7 @@
 
 from leawood.adapters import xbee
 from leawood.domain.messages import Data, NodeIntro, Telegram
-from leawood.domain import messages, token
+from leawood.domain import messages
 
 def test_create_message_from_data():
     payload_dict = {

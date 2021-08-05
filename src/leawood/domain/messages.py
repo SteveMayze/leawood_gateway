@@ -2,10 +2,8 @@
 
 from dataclasses import dataclass
 from typing import TypedDict
-from collections import namedtuple
-from leawood.domain import token
+from  leawood.adapters import token
 import logging
-import struct
 
 logger = logging.getLogger(__name__)
 
