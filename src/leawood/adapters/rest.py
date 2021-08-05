@@ -65,21 +65,21 @@ class Rest(Repository):
 
     
 
-    def _get_node(self, addr64bit: str) -> Node:
+    def _get_node(self, serial_id: str) -> Node:
         
         resource = 'devices'
-        query = f'{{"address":{{"$eq":"{addr64bit}"}}}}'
+        query = f'{{"serial_id":{{"$eq":"{serial_id}"}}}}'
         item = self._http_get(resource, query)
 
         if item != None:
             ## TODO - The creation of the Sensor should be based on the domain and class
             ##        of the device to pick up any specific features and properties.
             node = Sensor()
-            node.addr64bit = addr64bit
+            node.serial_id = serial_id
             node.device_id = item['device_id']
             node.node_class = item['class']
             node.name = item['name']
-            node.serial_id = item['serial_id']
+            node.addr64bit = item['address']
             node.description = item['description']
             node.location = item['location']
             node.domain = item['domain']
@@ -89,7 +89,7 @@ class Rest(Repository):
     def _add_node(self, node: Node) -> Node:
         payload = json.dumps(node.__dict__)
         response = self._http_post('devices', payload)
-        return self.get_node(node.addr64bit)
+        return self.get_node(node.serial_id)
 
     def _post_sensor_data(self, node: Node, messasge: Message):
         pass

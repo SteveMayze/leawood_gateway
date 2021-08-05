@@ -63,7 +63,7 @@ def test_receive_message(repository, modem, message_bus, gateway, modem_message_
 
 
 def test_receive_ready_message_from_a_known_node(gateway, sensor, modem_message_builder):
-    gateway.repository.repository_cache[sensor.addr64bit] = sensor
+    gateway.repository.repository_cache[sensor.serial_id] = sensor
     payload = {
         'operation': 'READY',
         'serial_id': sensor.serial_id,
@@ -77,7 +77,7 @@ def test_receive_ready_message_from_a_known_node(gateway, sensor, modem_message_
     # the sensor.
 
     message = DataReq(sensor.serial_id, sensor.addr64bit, None)
-    assert gateway.modem.spy[sensor.addr64bit] == message
+    assert gateway.modem.spy[sensor.serial_id] == message
 
 
 def test_receive_ready_message_from_an_unknown_node(gateway, sensor, modem_message_builder):
@@ -91,13 +91,13 @@ def test_receive_ready_message_from_an_unknown_node(gateway, sensor, modem_messa
     # the sensor to introduce itself.
 
     message = NodeIntroReq(sensor.serial_id, sensor.addr64bit, None)
-    assert gateway.modem.spy[sensor.addr64bit] == message
+    assert gateway.modem.spy[sensor.serial_id] == message
 
 
 
 def test_receive_data_message(gateway, sensor, modem_message_builder):
 
-    gateway.repository.repository_cache[sensor.addr64bit] = sensor
+    gateway.repository.repository_cache[sensor.serial_id] = sensor
 
     payload = {'operation': 'DATA', 'serial_id': sensor.serial_id, 'bus_voltage': 10.5}
     rcv_message = modem_message_builder.create_modem_message(sensor.addr64bit , payload)
@@ -110,7 +110,7 @@ def test_receive_data_message(gateway, sensor, modem_message_builder):
 
     # message = modem_message_builder.create_modem_message( sensor.addr64bit ,f'operation=DATAACK\nserial_id={sensor.serial_id}')
     message = DataAck(sensor.serial_id, sensor.addr64bit, None)
-    assert gateway.modem.spy[sensor.addr64bit] == message
+    assert gateway.modem.spy[sensor.serial_id] == message
     # Further to that, the gateway will publish the message
     # to the message bus to be picked up later by 
     # a listener the then post this using R£ST to the DB.
@@ -120,7 +120,7 @@ def test_receive_data_message(gateway, sensor, modem_message_builder):
 
 def test_receive_intro_message(gateway, sensor, modem_message_builder):
 
-    gateway.repository.repository_cache[sensor.addr64bit] = sensor
+    gateway.repository.repository_cache[sensor.serial_id] = sensor
     payload = {
         'operation': 'NODEINTRO', 
         'serial_id': sensor.serial_id, 
@@ -139,12 +139,12 @@ def test_receive_intro_message(gateway, sensor, modem_message_builder):
     # the sensor.
 
     message = IntroAck(sensor.serial_id, sensor.addr64bit, None)
-    assert gateway.modem.spy[sensor.addr64bit] == message
+    assert gateway.modem.spy[sensor.serial_id] == message
 
     # Further to that, the gateway will publish the message
     # to the repository
 
-    assert gateway.repository.spy['_add_node'].addr64bit == sensor.addr64bit
-    assert gateway.repository.repository_cache[sensor.addr64bit].addr64bit == sensor.addr64bit
+    assert gateway.repository.spy['_add_node'].serial_id == sensor.serial_id
+    assert gateway.repository.repository_cache[sensor.serial_id].addr64bit == sensor.addr64bit
     
 

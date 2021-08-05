@@ -64,8 +64,8 @@ class FakeModem(Modem):
 
     def send_message(self, message: Message):
         logger.info(f'Send message: {message}')
-        assert isinstance(message.addr64bit, str)
-        self.spy[message.addr64bit] = message
+        assert isinstance(message.serial_id, str)
+        self.spy[message.serial_id] = message
 
     def register_receive_callback(self, callback: Callable):
         self._receive_message_callback  = callback
@@ -90,12 +90,12 @@ class FakeRepository(Repository):
 
     def _add_node(self, node: Node):
         self.spy['_add_node'] = node
-        self.repository_cache[node.addr64bit] = node
+        self.repository_cache[node.serial_id] = node
     
-    def _get_node(self, addr64bit: str) -> Node:
-        self.spy['_get_node'] = addr64bit
-        if addr64bit in self.repository_cache:
-            return self.repository_cache[addr64bit]
+    def _get_node(self, serial_id: str) -> Node:
+        self.spy['_get_node'] = serial_id
+        if serial_id in self.repository_cache:
+            return self.repository_cache[serial_id]
         return None
 
     def _post_sensor_data(self, node: Node, message: Message):
@@ -158,6 +158,6 @@ def gateway(message_bus, repository, modem):
 def sensor():
     sensor = Sensor(None, None)
     sensor.serial_id = '0102030405060708'
-    sensor.addr64bit = "090a0b0c0d0e0f10"
+    sensor.addr64bit = '090a0b0c0d0e0f10'
     return sensor
 

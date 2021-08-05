@@ -73,7 +73,7 @@ class Sensor(Node):
         self.device_id = None
         self.node_class = None
         self.name = None
-        self.serial_id = None
+        self._serial_id = None
         self.description = None
         self.location = None
         self.domain = None
@@ -83,14 +83,21 @@ class Sensor(Node):
             modem.register_receive_callback(self.receive_message_callback)
 
 
-
-    ## This could eventuall pass over to be a serial number
-    ## since the address might not always
+    @property
     def addr64bit(self):
         return self._addr64bit
 
+    @addr64bit.setter
     def addr64bit(self, value):
-        self._addr64bit = value
+        self._addr64bit = value.upper()
+
+    @property
+    def serial_id(self):
+        return self._serial_id
+        
+    @serial_id.setter
+    def serial_id(self, value):
+        self._serial_id = value.upper()
 
     def send_message(self, message: Message):
         logger.info(f'Sensor sending message {message}')
@@ -152,7 +159,7 @@ class Gateway(Node):
     def handle_ready(self, message: Message):
         logger.info('Operation READY, sending DATA_REQ')
         ## First of all determine if this is from a registered node
-        node = self.repository.get_node(message.addr64bit)
+        node = self.repository.get_node(message.serial_id)
         if node != None:
             ## If so, then send a request for data.
             logger.info(f'The node {node} has requested further instruction')

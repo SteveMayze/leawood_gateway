@@ -22,8 +22,8 @@ class Telegram:
 class Message:
     def __init__(self, operation:str , serial_id:str, addr64bit:str, payload) -> None:
         self.operation = operation
-        self.serial_id = serial_id
-        self.addr64bit = addr64bit
+        self.serial_id = serial_id.upper()
+        self.addr64bit = addr64bit.upper()
         self.payload = payload
 
 @dataclass

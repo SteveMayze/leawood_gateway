@@ -65,7 +65,7 @@ class TestGateway:
 
 
     def test_repository_add_node(self, config):
-        random_addr = str(uuid.uuid1())
+        random_addr = uuid.uuid1().hex[:16]
         respository = Rest(config)
         node = Sensor()
         node.addr64bit = random_addr
@@ -76,7 +76,7 @@ class TestGateway:
         node.description = 'A device generated via integration tests'
         node = respository.add_node(node)
         assert node != None
-        assert node.serial_id == random_addr
+        assert node.serial_id == random_addr.upper()
         assert node.description == 'A device generated via integration tests'
 
 
@@ -142,6 +142,7 @@ class TestGateway:
             ## Execite the message bus callback
             ## This is where we need to inject some values
             ## to be sent to the database.
+
 
 
             messagebus.shutdown(message_bus)

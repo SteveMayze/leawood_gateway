@@ -24,19 +24,19 @@ class Repository(abc.ABC):
     def __init__(self) -> None:
         self.node_cache = {}
 
-    def get_node(self, addr64bit: str) -> Node:
-        if addr64bit in self.node_cache:
-            return self.node_cache[addr64bit]
+    def get_node(self, serial_id: str) -> Node:
+        if serial_id in self.node_cache:
+            return self.node_cache[serial_id]
         else:
-            node = self._get_node(addr64bit)
+            node = self._get_node(serial_id)
             if node != None:
-                self.node_cache[node.addr64bit] = node
+                self.node_cache[node.serial_id] = node
                 return node
         return None
     
 
     def post_sensor_data(self, message: Message):
-        node = self.get_node(message.addr64bit)
+        node = self.get_node(message.serial_id)
         if node:
             self._post_sensor_data(node, message)
         else:
@@ -44,11 +44,11 @@ class Repository(abc.ABC):
 
     def add_node(self, node: Node):
         new_node = self._add_node(node)
-        self.node_cache[node.addr64bit] = new_node
+        self.node_cache[node.serial_id] = new_node
         return new_node
 
     @abc.abstractmethod
-    def _get_node(self, addr64bit: str) -> Node:
+    def _get_node(self, serial_id: str) -> Node:
         raise NotImplementedError
 
     @abc.abstractmethod

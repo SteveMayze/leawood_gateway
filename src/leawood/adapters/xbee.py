@@ -20,7 +20,7 @@ class XBeeTelegram(Telegram):
     method is setup to output the payload to be passed down to the modem.
     """
     def __init__(self, message: Message):
-       super(XBeeTelegram, self).__init__(message.serial_id, message.operation, message.payload)
+       super(XBeeTelegram, self).__init__(message.serial_id.upper(), message.operation, message.payload)
 
     def as_bytearray(self) -> bytearray:
         telegram = messages.transform_telegram_to_bytearray(self)

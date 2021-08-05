@@ -12,6 +12,14 @@ class Node(abc.ABC):
     def addr64bit(self, value):
         raise NotImplementedError
 
+    @property
+    def serial_id(self):
+        raise NotImplementedError
+
+    @serial_id.setter
+    def serial_id(self, value):
+        raise NotImplementedError
+
     @abc.abstractmethod
     def send_message(self):
         raise NotImplementedError
