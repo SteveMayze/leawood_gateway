@@ -12,7 +12,7 @@ from leawood.services.messagebus import LocalMessageBus, MessageBus
 from leawood.services import messagebus 
 import time
 import uuid
-import json
+import random
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -123,13 +123,15 @@ class TestGateway:
             # going to work. the value labels need to be tokenised. 
             # This poses a problem for the metadata to define the information
             # from a senser node.
+            rand_voltage = random.randrange(105, 165)/10
+            rand_current = random.randrange(1,2500)/1000
             payload = {
-                "bus_voltage": 10.5,
-                "load_current": 3.2
+                "bus_voltage": rand_voltage,
+                "load_current": rand_current
             }
             
             sensor.send_message(Data('0013A200415D58CB', '0013A20041AE49D4', payload))
-            time.sleep(5)
+            time.sleep(7)
 
             message = wait_for_message(sensor.message_bus)
             assert isinstance(message, DataAck)
@@ -143,7 +145,7 @@ class TestGateway:
             ## This is where we need to inject some values
             ## to be sent to the database.
 
-
+            
 
             messagebus.shutdown(message_bus)
             wait_for_runnning_state(message_bus, False)

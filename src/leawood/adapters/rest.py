@@ -91,6 +91,23 @@ class Rest(Repository):
         response = self._http_post('devices', payload)
         return self.get_node(node.serial_id)
 
-    def _post_sensor_data(self, node: Node, messasge: Message):
-        pass
+    def _post_sensor_data(self, node: Node, message: Message):
+        """
+        {
+            "serial_id": "0013A200415D58CB",
+            "data": [{"bus_voltage": 10.56}]
+        }
+        """
+        payload = {}
+        payload['serial_id'] = message.serial_id
+        data = []
+        for name, val in message.payload.items():
+            data_element = {}
+            data_element[name] = val
+            data.append(data_element)
+        payload['data'] = data
+        payload = json.dumps(payload)
+        logger.info(f'Posting {payload}')
+        self._http_post('data_points', payload)
+        
 
