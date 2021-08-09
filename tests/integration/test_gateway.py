@@ -1,13 +1,8 @@
 
-from leawood.adapters.rest import Rest
-from leawood.adapters.xbee import XBeeModem
-
 import logging
 
 from leawood.domain.messages import Data, DataAck, Ready, DataReq
-from leawood.domain.hardware import Gateway
-from leawood.services.messagebus import LocalMessageBus, MessageBus
-from leawood.services import messagebus 
+from leawood.services.messagebus import MessageBus
 import time
 import random
 
