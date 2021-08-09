@@ -21,6 +21,47 @@ It may be necessary to reinstall the digi-xbee to pick up the serial package.
 pip install --upgrade --force-reinstall digi-xbee
 ```
 
+## Starting the gate way
+
+```python -m leawood.gateway -v```
+
+```shell
+python -m leawood.gateway -h
+usage: gateway.py [-h] [-c config_file] [-v] [-u user_name] [-w password] [-r rest] [-C certpath] [-a cacert] [-l clientcrt] [-k clientkey] [-m mqttserver] [-p mqttport]
+                  [-f file] [-s serial-port] [-b baud] [-S sleeptime]
+
+Start and stop the gateway
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c config_file, --config config_file
+                        The configuration file containing the common arguments
+  -v, --verbose         Enable debug mode
+  -u user_name, --username user_name
+                        The username for the REST service
+  -w password, --password password
+                        The password for the REST service
+  -r rest, --rest rest  The base ReST endpoint
+  -C certpath, --certpath certpath
+                        The path to the certificates
+  -a cacert, --cacert cacert
+                        The name of the CA certificate
+  -l clientcrt, --clientcrt clientcrt
+                        The name of the client certificate
+  -k clientkey, --clientkey clientkey
+                        The name of the client key file
+  -m mqttserver, --mqttserver mqttserver
+                        The IP address of the MQTT server
+  -p mqttport, --mqttport mqttport
+                        The port for the MQTT sever
+  -f file, --file file  The name of the payload file
+  -s serial-port, --serial-port serial-port
+                        The serial port for the XBee module
+  -b baud, --baud baud  The baud rate for the XBee module
+  -S sleeptime, --sleeptime sleeptime
+                        The sleep time when waiting to request new information
+```
+
 ## Running the tests
 
 ```

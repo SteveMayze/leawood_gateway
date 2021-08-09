@@ -51,8 +51,6 @@ class TestGateway:
         GREEN 0013A200415D58CB
         """
 
-        ## TODO - A better story is required to determin how and
-        ##        when the modem is opened and closed.
         try:
 
 
@@ -70,10 +68,6 @@ class TestGateway:
             # load_current=3.2
             # """
 
-            # The payload can only be 73 bytes. So this type of payload is not 
-            # going to work. the value labels need to be tokenised. 
-            # This poses a problem for the metadata to define the information
-            # from a senser node.
             rand_voltage = round(random.randrange(105, 165)/10, 2)
             rand_current = round(random.randrange(1,2500)/1000, 2)
             payload = {
@@ -96,13 +90,8 @@ class TestGateway:
             ## This is where we need to inject some values
             ## to be sent to the database.
 
-            
-
-            # messagebus.shutdown(message_bus)
-            # wait_for_runnning_state(message_bus, False)
         finally:
             sensor.close()            
-            pass
 
 
     def test_sensor_send(self, sensor, gateway):

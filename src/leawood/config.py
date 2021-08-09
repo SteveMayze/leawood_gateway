@@ -40,7 +40,7 @@ class Config:
 
 
     def parse_args(self, args):
-        parser = argparse.ArgumentParser(description="List and download the artifact metadata. kubectl port-forward $deploy_pod 9000:9000")
+        parser = argparse.ArgumentParser(description="Start and stop the gateway")
         parser.add_argument('-c', '--config', metavar='config_file', required=False, dest='config', action='store', help='The configuration file containing the common arguments')
         parser.add_argument('-v', '--verbose', required=False, dest='debug', action='store_true', help='Enable debug mode')
         parser.add_argument('-u', '--username', metavar='user_name', required=False, dest='username', action='store', help='The username for the REST service')
