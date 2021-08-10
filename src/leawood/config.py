@@ -56,6 +56,7 @@ class Config:
         parser.add_argument('-s', '--serial-port', metavar='serial-port', required=False, dest='serialport', action='store', help='The serial port for the XBee module')
         parser.add_argument('-b', '--baud', metavar='baud', required=False, dest='baud', action='store', help='The baud rate for the XBee module')
         parser.add_argument('-S', '--sleeptime', metavar='sleeptime', required=False, dest='sleeptime', action='store', help='The sleep time when waiting to request new information')
+        parser.add_argument('command', choices=['start', 'stop'], help='Start the gateway process')
         parsed_args = parser.parse_args(args)
         return parsed_args
 
@@ -135,6 +136,10 @@ class Config:
         if args.sleeptime != None:
             logger.debug( f'Sleep time: {args.sleeptime}')
             config_data['sleep-time'] = args.sleeptime
+
+        if args.command != None:
+            logger.debug( f'Command: {args.command}')
+            config_data['command'] = args.command
 
         logger.debug(f'config_data: {config_data}')
         return config_data
