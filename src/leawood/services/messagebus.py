@@ -1,7 +1,6 @@
 import queue
 from typing import Callable, Dict, Type
 from leawood.domain.messages import Message
-import time
 from threading import Thread
 import logging 
 import abc
@@ -94,6 +93,7 @@ def activate(message_bus: MessageBus):
     if message_bus.message_handlers == None:
         raise MessageBusError('The event bus must have a callback defined.')
     message_bus.listener_thread = Thread(target=message_bus._listener)
+    message_bus.listener_thread.setDaemon(True)
     message_bus.listener_thread.start()
 
 def shutdown(message_bus: MessageBus):

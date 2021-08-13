@@ -33,7 +33,7 @@ def create_config(configname):
     config_path = os.path.join(script_dir, configname)
     cert_path = os.path.join(script_dir, '.ssh')
     args = ['--config', config_path, 
-        '--certpath', cert_path]
+        '--certpath', cert_path, 'start']
     return Config(args)
 
 @pytest.fixture
@@ -49,19 +49,26 @@ def sensor():
     return sensor
 
 @pytest.fixture
-def repository(config)    :
+def repository(config):
     repository = Rest(config)
     return repository
 
 @pytest.fixture
 def gateway(config, repository):
-    logger.info(f'Creating a gateway with {config}')
-    modem = XBeeModem(config)
-    message_bus = LocalMessageBus()
-    gateway = Gateway(message_bus, repository, modem)
-    messagebus.activate(message_bus)
-    wait_for_runnning_state(message_bus, True)
+    staging_gateway = os.environ.get('STAGING_GATEWAY')
+    gateway = None
+    messagebus = None
+    if not staging_gateway:
+        logger.info(f'Creating a test gateway with {config}')
+        modem = XBeeModem(config)
+        message_bus = LocalMessageBus()
+        gateway = Gateway(message_bus, repository, modem)
+        messagebus.activate(message_bus)
+        wait_for_runnning_state(message_bus, True)
+    else:
+        gateway = Gateway(None, None, None)
     yield gateway
-    messagebus.shutdown(message_bus)
-    wait_for_runnning_state(message_bus, False)
+    if messagebus:
+        messagebus.shutdown(message_bus)
+        wait_for_runnning_state(message_bus, False)
     gateway.close()

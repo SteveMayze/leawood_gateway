@@ -56,7 +56,10 @@ class Config:
         parser.add_argument('-s', '--serial-port', metavar='serial-port', required=False, dest='serialport', action='store', help='The serial port for the XBee module')
         parser.add_argument('-b', '--baud', metavar='baud', required=False, dest='baud', action='store', help='The baud rate for the XBee module')
         parser.add_argument('-S', '--sleeptime', metavar='sleeptime', required=False, dest='sleeptime', action='store', help='The sleep time when waiting to request new information')
-        parser.add_argument('command', choices=['start', 'stop'], help='Start the gateway process')
+        ### parser.add_argument('command', choices=['start', 'stop'], help='Start the gateway process' )
+        subparsers = parser.add_subparsers(dest='command')
+        start_parser = subparsers.add_parser('start')
+        start_parser = subparsers.add_parser('stop')
         parsed_args = parser.parse_args(args)
         return parsed_args
 

@@ -139,9 +139,10 @@ class Gateway(Node):
         self.message_bus = message_bus
         self.modem = modem
         self.repository = repository
-
-        modem.register_receive_callback(self.receive_message_callback)
-        message_bus.register_message_handlers(self.get_handlers())
+        if modem:
+            modem.register_receive_callback(self.receive_message_callback)
+        if message_bus:
+            message_bus.register_message_handlers(self.get_handlers())
 
 
     def send_message(self, message: Message):
@@ -202,8 +203,10 @@ class Gateway(Node):
 
 
     def open(self):
-        self.modem.open()
+        if self.modem:
+            self.modem.open()
 
     def close(self):
-        self.modem.close()        
+        if self.modem:
+            self.modem.close()        
 

@@ -26,11 +26,15 @@ pip install --upgrade --force-reinstall digi-xbee
 ```python -m leawood.gateway -v```
 
 ```shell
-python -m leawood.gateway -h
-usage: gateway.py [-h] [-c config_file] [-v] [-u user_name] [-w password] [-r rest] [-C certpath] [-a cacert] [-l clientcrt] [-k clientkey] [-m mqttserver] [-p mqttport]
-                  [-f file] [-s serial-port] [-b baud] [-S sleeptime]
+python -m leawood -h
+usage: __main__.py [-h] [-c config_file] [-v] [-u user_name] [-w password] [-r rest] [-C certpath] [-a cacert] [-l clientcrt]
+                   [-k clientkey] [-m mqttserver] [-p mqttport] [-f file] [-s serial-port] [-b baud] [-S sleeptime]
+                   {start,stop} ...
 
 Start and stop the gateway
+
+positional arguments:
+  {start,stop}
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -60,9 +64,17 @@ optional arguments:
   -b baud, --baud baud  The baud rate for the XBee module
   -S sleeptime, --sleeptime sleeptime
                         The sleep time when waiting to request new information
+$
 ```
 
 ## Running the tests
+The tests use pytest. When ran normally, there will be an internal version of a gateway created
+and started. The tests can be ran against an indepentant gateway i.e. a staging gateway by setting
+an envrionment variable to indicate to the tests no to user the internal version
+
+```
+export STAGING_GATEWAY=True
+```
 
 ```
 pytest
