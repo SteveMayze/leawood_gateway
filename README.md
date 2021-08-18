@@ -4,6 +4,7 @@ This module represents the code for implementing a base-station. This 
 # Requirements
 Python 3.9+
 
+https://raspberrytips.com/install-latest-python-raspberry-pi/
 # Creating a local environment
 
 ```shell
@@ -22,6 +23,9 @@ pip install --upgrade --force-reinstall digi-xbee
 ```
 
 ## Starting the gate way
+
+The gateway will start and stay running in that thread. It can be terminated via a keyboard interrupt
+or by using the stop command from another terminal session.
 
 ```python -m leawood.gateway -v```
 

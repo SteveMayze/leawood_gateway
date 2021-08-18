@@ -9,10 +9,13 @@ from leawood.services.messagebus import LocalMessageBus
 from leawood.adapters.xbee import XBeeModem
 from leawood.adapters.rest import Rest
 import time
-
+import uuid
+from pathlib import Path
 
 MAX_WAIT = 2
 
+pid = Path('~/.leawood/pid')
+pid = pid.expanduser()
 
 def wait_for_runnning_state(worker, state):
     start_time = time.time()
@@ -30,6 +33,19 @@ logger = logging.getLogger(__name__)
 
 def start(config: Config):
     logger.debug('start begin')
+    logger.info('Checkig PID')
+    uid = str(uuid.uuid4())
+    if not pid.parent.exists():
+        logger.info(f'Creating {pid.parent}')
+        pid.parent.mkdir()
+
+    if pid.exists():
+        logger.debug(f'The PID {pid} already exists ... overwriting')
+        pid.unlink()
+
+    logger.debug(f'Creating PID {pid} with {uid}')
+    pid.write_text(f'{uid}')
+
     logger.info(f'Creating a gateway with {config}')
     repository = Rest(config)
     modem = XBeeModem(config)
@@ -41,6 +57,15 @@ def start(config: Config):
         while True:
             message_bus.listener_thread.join(10)
             logger.info('heartbeat')
+            if pid.exists():
+                check = pid.read_text()
+                if not check == uid:
+                    logger.info('The PID has changed. Shutting this thread down.')
+                    break
+            else:
+                logger.info('The PID has been removed. Shutting this thread down.')
+                break
+
     except KeyboardInterrupt:
         logger.info('key board interrupt. Closing down')
         pass
@@ -51,6 +76,8 @@ def start(config: Config):
 
 def stop(config: Config):
     logger.debug('stop begin')
+    if pid.exists():
+        pid.unlink()
     logger.debug('stop end')
 
 
