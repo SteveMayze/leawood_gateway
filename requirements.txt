@@ -6,7 +6,7 @@ chardet==4.0.0
 colorama==0.4.4
 digi-xbee==1.4.0
 future==0.18.2
--e git+git@github.com:SteveMayze/leawood_gateway.git@14e33b7b88167bf3e79a041e6331d4c16f55ee15#egg=gateway&subdirectory=src
+-e git+git@github.com:SteveMayze/leawood_gateway.git@b21c135ca3bbc32249e68091a50a63957d5e1e0f#egg=gateway&subdirectory=src
 idna==2.10
 importlib-metadata==3.4.0
 iniconfig==1.1.1
@@ -14,7 +14,7 @@ iso8601==0.1.14
 isort==5.8.0
 Jinja2==3.0.1
 lazy-object-proxy==1.6.0
--e git+git@github.com:SteveMayze/leawood_gateway.git@14e33b7b88167bf3e79a041e6331d4c16f55ee15#egg=leawood&subdirectory=src
+-e git+git@github.com:SteveMayze/leawood_gateway.git@b21c135ca3bbc32249e68091a50a63957d5e1e0f#egg=leawood&subdirectory=src
 MarkupSafe==2.0.1
 mccabe==0.6.1
 packaging==20.9
