@@ -11,6 +11,10 @@ logger.setLevel(logging.DEBUG)
 
 MAX_WAIT = 2
 
+RED = '0013A20041AE49D4'
+GREEN = '0013A200415D58CB'
+WHITE = '0013A200415C0F82'
+
 def wait_for_message(message_bus: MessageBus):
     start_time = time.time()
     while True:
@@ -49,6 +53,7 @@ class TestGateway:
         """
         RED   0013A20041AE49D4
         GREEN 0013A200415D58CB
+        WHITE 0013A200415C0F82
         """
 
         try:
@@ -56,7 +61,7 @@ class TestGateway:
 
             # Sensor to send READY.
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Ready('0013A200415D58CB', '0013A20041AE49D4', None))
+            sensor.send_message( Ready('0013A200415D58CB', WHITE, None))
             time.sleep(5)
 
             # Verify the Data request.
@@ -75,7 +80,7 @@ class TestGateway:
                 "load_current": rand_current
             }
             
-            sensor.send_message(Data('0013A200415D58CB', '0013A20041AE49D4', payload))
+            sensor.send_message(Data('0013A200415D58CB', WHITE, payload))
             time.sleep(7)
 
             message = wait_for_message(sensor.message_bus)
@@ -104,7 +109,7 @@ class TestGateway:
 
             # Sensor to send READY.
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Ready('0013A200415D58CB', '0013A20041AE49D4', None))
+            sensor.send_message( Ready('0013A200415D58CB', WHITE, None))
             time.sleep(5)
 
             payload = {
@@ -113,7 +118,7 @@ class TestGateway:
                 "load_current": 3.2
             }
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Data('0013A200415D58CB', '0013A20041AE49D4', payload))
+            sensor.send_message( Data('0013A200415D58CB', WHITE, payload))
 
         finally:
             sensor.close()            
