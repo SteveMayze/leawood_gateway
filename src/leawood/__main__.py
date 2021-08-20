@@ -34,7 +34,10 @@ logger = logging.getLogger(__name__)
 def start(config: Config):
     logger.debug('start begin')
     logger.info('Checkig PID')
-    uid = str(uuid.uuid4())
+    # On the Pi, the /dev/urandom is not available on startup. It is not known
+    # when or how this is avaialble as using uuid.uuid4() worked up until a 
+    # cold restart.
+    uid = str(uuid.uuid1())
     if not pid.parent.exists():
         logger.info(f'Creating {pid.parent}')
         pid.parent.mkdir()
