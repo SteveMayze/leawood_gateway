@@ -3,6 +3,7 @@ import logging
 
 from leawood.domain.messages import Data, DataAck, Ready, DataReq
 from leawood.services.messagebus import MessageBus
+from leawood.domain.hardware import Sensor, Gateway
 import time
 import random
 
@@ -11,9 +12,6 @@ logger.setLevel(logging.DEBUG)
 
 MAX_WAIT = 2
 
-RED = '0013A20041AE49D4'
-GREEN = '0013A200415D58CB'
-WHITE = '0013A200415C0F82'
 
 def wait_for_message(message_bus: MessageBus):
     start_time = time.time()
@@ -42,7 +40,7 @@ class TestGateway:
     tests/integration/test_gateway.py::TestGateway::test_gateway_operation
     """
 
-    def test_gateway_data_operation(self, sensor, gateway):
+    def test_gateway_data_operation(self, sensor: Sensor, gateway: Gateway, staging_address: str):
         """"
         Tests the operation from the point of view of a node seding the READY
         operation and the response from the gateway to say that it is free
@@ -58,10 +56,9 @@ class TestGateway:
 
         try:
 
-
             # Sensor to send READY.
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Ready('0013A200415D58CB', WHITE, None))
+            sensor.send_message( Ready('0013A200415D58CB', staging_address, None))
             time.sleep(5)
 
             # Verify the Data request.
@@ -80,7 +77,7 @@ class TestGateway:
                 "load_current": rand_current
             }
             
-            sensor.send_message(Data('0013A200415D58CB', WHITE, payload))
+            sensor.send_message(Data('0013A200415D58CB', staging_address, payload))
             time.sleep(7)
 
             message = wait_for_message(sensor.message_bus)
@@ -99,7 +96,7 @@ class TestGateway:
             sensor.close()            
 
 
-    def test_sensor_send(self, sensor, gateway):
+    def test_sensor_send(self, sensor, gateway, staging_address):
         """
         A rough test to send a message without verification. This is used in conjunction
         with the XCTU tool to verify the physical messages sent. 
@@ -109,7 +106,7 @@ class TestGateway:
 
             # Sensor to send READY.
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Ready('0013A200415D58CB', WHITE, None))
+            sensor.send_message( Ready('0013A200415D58CB', staging_address, None))
             time.sleep(5)
 
             payload = {
@@ -118,7 +115,7 @@ class TestGateway:
                 "load_current": 3.2
             }
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Data('0013A200415D58CB', WHITE, payload))
+            sensor.send_message( Data('0013A200415D58CB', staging_address, payload))
 
         finally:
             sensor.close()            

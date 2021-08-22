@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 MAX_WAIT = 2
 
+RED = '0013A20041AE49D4'
+GREEN = '0013A200415D58CB'
+WHITE = '0013A200415C0F82'
 
 def wait_for_runnning_state(worker, state):
     start_time = time.time()
@@ -53,12 +56,20 @@ def repository(config):
     repository = Rest(config)
     return repository
 
+
 @pytest.fixture
-def gateway(config, repository):
-    staging_gateway = os.environ.get('STAGING_GATEWAY')
+def staging_address():
+    staging = os.environ.get('STAGING_GATEWAY')
+    if RED == staging:
+        return None
+    return staging
+
+
+@pytest.fixture
+def gateway(config, repository, staging_address):
     gateway = None
     messagebus = None
-    if not staging_gateway:
+    if not staging_address:
         logger.info(f'Creating a test gateway with {config}')
         modem = XBeeModem(config)
         message_bus = LocalMessageBus()
