@@ -1,0 +1,34 @@
+from fabric.contrib.files import  exists, upload_template
+from fabric.api import cd, env, local, run
+
+REPO_URL='https://github.com/SteveMayze/leawood_gateway.git'
+
+def deploy():
+    site_folder = f'/home/{env.user}/python/leawood_gateway'
+    run(f'mkdir -p {site_folder}')
+    with cd(site_folder):
+        _stop_gateway()
+        _get_last_source()
+        _update_virtualenv()
+        _create_or_update_config()
+
+def _stop_gateway():
+    run('.venv/bin/python -m leawood stop')        
+
+def _get_last_source():
+    if exists('.git'):
+        run('git fetch')
+    else:
+        run(f'git clone {REPO_URL}')
+    current_commit = local('git log -n 1 --format=%H', capture=True)
+    run(f'git reset --hard {current_commit}')
+
+def _update_virtualenv():
+    if not exists('.venv/bin/pip'):
+        run(f'python3 -m venv .venv')
+    run('.venv/bin/pip install -r requirements.txt')
+
+def _create_or_update_config():
+    upload_template('config_template.json', 'config.json')
+
+
