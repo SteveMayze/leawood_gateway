@@ -13,7 +13,8 @@ def deploy():
         _create_or_update_config()
 
 def _stop_gateway():
-    run('.venv/bin/python -m leawood stop')        
+    if exists('src/leawood'):
+        run('.venv/bin/python -m leawood stop')        
 
 def _get_last_source():
     if exists('.git'):
