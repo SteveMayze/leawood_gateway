@@ -59,7 +59,7 @@ def start(config: Config):
     try:
         while True:
             message_bus.listener_thread.join(10)
-            logger.info('heartbeat')
+            logger.debug('heartbeat')
             if pid.exists():
                 check = pid.read_text()
                 if not check == uid:

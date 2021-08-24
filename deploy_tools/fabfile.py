@@ -11,6 +11,7 @@ def deploy():
         _get_last_source()
         _update_virtualenv()
         _create_or_update_config()
+        _start_the_gateway()
 
 def _stop_gateway():
     if exists('src/leawood'):
@@ -27,11 +28,14 @@ def _get_last_source():
 def _update_virtualenv():
     if not exists('.venv/bin/pip'):
         run(f'python -m venv .venv')
-    run('.venv/bin/python -m pip install --upgrade pip')
+        run('.venv/bin/python -m pip install --upgrade pip')
     run('.venv/bin/pip install -r requirements.txt')
     run('.venv/bin/pip install --upgrade --force-reinstall digi-xbee')
 
 def _create_or_update_config():
     upload_template('config_template.json', 'config.json')
+
+def _start_the_gateway():
+     run('.venv/bin/python  -m leawood -c ~/python/leawood_gateway/config.json start &')
 
 
