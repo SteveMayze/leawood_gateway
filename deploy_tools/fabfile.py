@@ -11,7 +11,7 @@ def deploy():
         _get_last_source()
         _update_virtualenv()
         _create_or_update_config()
-        _start_the_gateway()
+        # _start_the_gateway()
 
 def _stop_gateway():
     if exists('src/leawood'):
@@ -36,6 +36,6 @@ def _create_or_update_config():
     upload_template('config_template.json', 'config.json')
 
 def _start_the_gateway():
-     run('.venv/bin/python  -m leawood -c ~/python/leawood_gateway/config.json start &')
+     run('nohup .venv/bin/python  -m leawood -c ~/python/leawood_gateway/config.json start &')
 
 
