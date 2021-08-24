@@ -26,8 +26,10 @@ def _get_last_source():
 
 def _update_virtualenv():
     if not exists('.venv/bin/pip'):
-        run(f'python3 -m venv .venv')
+        run(f'python -m venv .venv')
+    run('.venv/bin/python -m pip install --upgrade pip')
     run('.venv/bin/pip install -r requirements.txt')
+    run('.venv/bin/pip install --upgrade --force-reinstall digi-xbee')
 
 def _create_or_update_config():
     upload_template('config_template.json', 'config.json')
