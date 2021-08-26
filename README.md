@@ -22,7 +22,7 @@ It may be necessary to reinstall the digi-xbee to pick up the serial package.
 pip install --upgrade --force-reinstall digi-xbee
 ```
 
-## Starting the gate way
+## Starting the gateway
 
 The gateway will start and stay running in that thread. It can be terminated via a keyboard interrupt
 or by using the stop command from another terminal session.
@@ -31,8 +31,9 @@ or by using the stop command from another terminal session.
 
 ```shell
 python -m leawood -h
-usage: __main__.py [-h] [-c config_file] [-v] [-u user_name] [-w password] [-r rest] [-C certpath] [-a cacert] [-l clientcrt]
-                   [-k clientkey] [-m mqttserver] [-p mqttport] [-f file] [-s serial-port] [-b baud] [-S sleeptime]
+usage: __main__.py [-h] [-c config_file] [-v] [-u user_name] [-w password]
+                   [-l logfile] [-r rest] [-s serial-port] [-b baud]
+                   [-S sleeptime]
                    {start,stop} ...
 
 Start and stop the gateway
@@ -49,35 +50,30 @@ optional arguments:
                         The username for the REST service
   -w password, --password password
                         The password for the REST service
+  -l logfile, --logfile logfile
+                        The name of the log file
   -r rest, --rest rest  The base ReST endpoint
-  -C certpath, --certpath certpath
-                        The path to the certificates
-  -a cacert, --cacert cacert
-                        The name of the CA certificate
-  -l clientcrt, --clientcrt clientcrt
-                        The name of the client certificate
-  -k clientkey, --clientkey clientkey
-                        The name of the client key file
-  -m mqttserver, --mqttserver mqttserver
-                        The IP address of the MQTT server
-  -p mqttport, --mqttport mqttport
-                        The port for the MQTT sever
-  -f file, --file file  The name of the payload file
   -s serial-port, --serial-port serial-port
                         The serial port for the XBee module
   -b baud, --baud baud  The baud rate for the XBee module
   -S sleeptime, --sleeptime sleeptime
                         The sleep time when waiting to request new information
+
 $
 ```
 
 ## Running the tests
 The tests use pytest. When ran normally, there will be an internal version of a gateway created
 and started. The tests can be ran against an indepentant gateway i.e. a staging gateway by setting
-an envrionment variable to indicate to the tests no to user the internal version
+an envrionment variable to indicate to the tests no to user the internal version.
+
+The STAGING_GATEWAY defines the addres the pseudo sensor should use ( this will be factored out in 
+another iteration of changes). The STAGED flag indicates whether to create the internal gateway service
+or to use another hosted elsewhere.
 
 ```
-export STAGING_GATEWAY=True
+export STAGING_GATEWAY=<GATEWAY ADDRESS>
+export STAGED=(True|False)
 ```
 
 ```
@@ -88,6 +84,36 @@ Running the tests with logging
 ```
 pytest -v -s --log-cli-level INFO
 ```
+
+## Deployment
+Deployment uses Fabric3 and the fabfile.py located in the deploy_tools directory. This should take care of creating the 
+environment for the gateway to run. There are issues with Raspberry Pi Zero where some dependant libraries had to be 
+installed and the Python 3.9 code compiled against these libraries.
+
+```shell
+wget https:// www.python. org/ftp/python/3.9.5/Python-3.9.6.tgz
+tar -zxvf Python-3.9.6.tgz
+sudo apt-get install libffi-dev
+sudo apt-get install build-essential checkinstall 
+sudo apt-get install libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+cd Python-3.9.6
+sudo ./configure --enable-optimizations
+sudo make altinstall
+
+# Make Python3.9 default
+cd /usr/bin
+sudo rm python
+sudo ln -s /usr/local/bin/python3.9 python
+python --version
+```
+Once the Python 3.9 is installed and made default, the fabric module can be used to then deploy the gateway
+to the Raspberry Pi.
+
+```shell
+cd deploy_tools
+fab deploy:host=<HOST CONNECTION>
+```
+
 ## Generating the Documentation
  
  ```
@@ -99,8 +125,8 @@ pytest -v -s --log-cli-level INFO
 The purpose of the Hub is to act as a gateway between the radio units (currently XBee) and the application (i.e. database). Once the process starts up it will launch three other independent threads 
 
 1. Message handler to control the messages too and from the radio units.
-2. MQTT subscriber to react to messages from the radio units and post the data to the application via REST.
-3. MQTT subscriber to receive messages from the application and post to the message handler.
+2. An internal queue is used to react to messages from the radio units and post the data to the application via REST.
+3. An internal queue is used to receive messages from the application and post to the message handler.
 
 The purpose of these independent threads is to ensure that the thread that monitors the radio unit has sole access to the serial port.
 
@@ -130,12 +156,6 @@ If the node is not currently registered in the local list, then a request to the
 ## Node Reconnected
 
 ## Node Configuration
-
-# MQTT Subscriber - Posting messages to the application
-This MQTT subscriber will receive messages from the Message Handler and package them into a compatible format to be received by the application. Performing the work in this manner means that the message handler does not have to spend time and can simply receive its message from the radio unit and push it to the queue.
-
-# MQTT Subscriber - Receiving messages from the application
-The MQTT subscriber for receiving message from the application will take these messages and prepare them for transmission. These will then be posted onto a local queue that the message handler is monitoring and will take them from the queue and transmit them.
 
 # Node Metadata
 A node, for all intents and purposes, is a sensor. This will take readings and transmit them to the nearest hub that they are connected to. Each sensor node will be tracking one or more measurements and these measurements will have their units and multipliers. The problem to solve is getting this information to the user interface in a way in which there is minimal effort for the user and programmer to set up the various parameters. To solve this the thought is that when a new node is introduced to a hub, then the hub should ask for what data it can expect. The telegram it receives back should have each data element the sensor will supply. Each element will include its label, SI unit and multiplier. This information is then sent to the application and the node along with its expected data elements are registered into the database.

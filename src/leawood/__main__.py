@@ -28,8 +28,7 @@ def wait_for_runnning_state(worker, state):
                 raise error 
             time.sleep( 0.5)    
 
-logging.basicConfig(filename='leawood_gateway.log', filemode='w', level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = None
 
 def start(config: Config):
     logger.debug('start begin')
@@ -85,7 +84,15 @@ def stop(config: Config):
 
 
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
+
     config = Config(sys.argv[1:])
+
+    if 'logfile' in config.config_data:
+        logging.basicConfig(filename=config.config_data['logfile'], filemode='w', level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
     log_level = config.debug
 
     logger_level = {

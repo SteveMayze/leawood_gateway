@@ -34,18 +34,16 @@ def wait_for_runnning_state(worker, state):
 def create_config(configname):
     script_dir = os.path.dirname(__file__)
     config_path = os.path.join(script_dir, configname)
-    cert_path = os.path.join(script_dir, '.ssh')
-    args = ['--config', config_path, 
-        '--certpath', cert_path, 'start']
+    args = ['--config', config_path, 'start']
     return Config(args)
 
 @pytest.fixture
 def config():
-    return create_config('config.json')
+    return create_config('config.ini')
 
 @pytest.fixture
 def sensor():
-    sensor_config = create_config('config-test-sensor.json')
+    sensor_config = create_config('config-test-sensor.ini')
     message_bus = LocalMessageBus()
     modem = XBeeModem(sensor_config)
     sensor = Sensor(message_bus, modem)
@@ -58,18 +56,23 @@ def repository(config):
 
 
 @pytest.fixture
-def staging_address():
-    staging = os.environ.get('STAGING_GATEWAY')
-    if RED == staging:
-        return None
-    return staging
-
+def is_staged():
+    staged = os.environ.get('STAGED')
+    if staged == 'True':
+        logger.info('Staged')
+        return True
+    return False
 
 @pytest.fixture
-def gateway(config, repository, staging_address):
+def staging_address():
+    staging = os.environ.get('STAGING_GATEWAY')
+    return staging
+
+@pytest.fixture
+def gateway(config, repository, is_staged):
     gateway = None
-    messagebus = None
-    if not staging_address:
+    message_bus = None
+    if not is_staged:
         logger.info(f'Creating a test gateway with {config}')
         modem = XBeeModem(config)
         message_bus = LocalMessageBus()
@@ -77,9 +80,10 @@ def gateway(config, repository, staging_address):
         messagebus.activate(message_bus)
         wait_for_runnning_state(message_bus, True)
     else:
+        logger.info(f'Creating dummy gateway')
         gateway = Gateway(None, None, None)
     yield gateway
-    if messagebus:
+    if message_bus:
         messagebus.shutdown(message_bus)
         wait_for_runnning_state(message_bus, False)
     gateway.close()

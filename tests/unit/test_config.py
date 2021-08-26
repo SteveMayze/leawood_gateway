@@ -3,26 +3,26 @@ from leawood.config import Config
 class TestCase:
 
     def test_basic(self):
-        args = ['-f', 'one']
+        args = ['-u', 'one']
         config = Config(args)
-        assert config.config_data['file'] == 'one'
+        assert config.config_data['username'] == 'one'
         assert 'command' not in config.config_data
 
 
     def test_basic_command(self):
-        args = ['-f', 'one', 'start']
+        args = ['-u', 'one', 'start']
         config = Config(args)
-        assert config.config_data['file'] == 'one'
+        assert config.config_data['username'] == 'one'
         assert config.config_data['command'] == 'start'
 
     def test_basic_debug(self):
-        args = ['-f', 'one', '-v']
+        args = ['-u', 'one', '-v']
         config = Config(args)
-        assert config.config_data['file'] == 'one'
+        assert config.config_data['username'] == 'one'
         assert config.debug
 
     def test_config_file(self):
-        args = ['-v', '--config', 'tests/sample-config.json']
+        args = ['-v', '--config', 'tests/sample-config.ini']
         config = Config(args)
         assert config.config_data['username'] == 'REST_USER'
         assert config.config_data['password'] == 'PASSWORD-NOT-SET'

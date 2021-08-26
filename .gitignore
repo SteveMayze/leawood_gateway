@@ -221,11 +221,11 @@ virtualenv
 
 .ssh
 
-config.json
+config.ini
 
 # created by virtualenv automatically
 .pytest_cache
 Lib
 Scripts
 .ssh
-config*.json
+config*.ini
