@@ -71,9 +71,16 @@ The STAGING_GATEWAY defines the addres the pseudo sensor should use ( this will 
 another iteration of changes). The STAGED flag indicates whether to create the internal gateway service
 or to use another hosted elsewhere.
 
-```
+Linux
+```shell
 export STAGING_GATEWAY=<GATEWAY ADDRESS>
 export STAGED=(True|False)
+```
+
+Powershell
+```powershell
+$Env:STAGING_GATEWAY = "<GATEWAY ADDRESS>"
+$Env:export STAGED = ("True"|"False")
 ```
 
 ```

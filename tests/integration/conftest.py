@@ -58,7 +58,7 @@ def repository(config):
 @pytest.fixture
 def is_staged():
     staged = os.environ.get('STAGED')
-    if staged == 'True':
+    if staged != None and staged == 'True':
         logger.info('Staged')
         return True
     return False
@@ -66,6 +66,8 @@ def is_staged():
 @pytest.fixture
 def staging_address():
     staging = os.environ.get('STAGING_GATEWAY')
+    if staging == None:
+        return RED
     return staging
 
 @pytest.fixture
