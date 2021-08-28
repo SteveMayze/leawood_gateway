@@ -34,7 +34,7 @@ def _update_virtualenv():
     run('.venv/bin/pip install --upgrade --force-reinstall digi-xbee')
 
 def _create_or_update_config():
-    upload_template('config_template.ini', 'config.ini')
+    upload_template('prod_config_template.ini', 'config.ini')
 
 def _start_the_gateway():
      run('nohup .venv/bin/python  -m leawood -c ~/python/leawood_gateway/config.ini start &')
