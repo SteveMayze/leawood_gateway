@@ -123,21 +123,21 @@
 
     
 
-    <span class="k">def</span> <span class="nf">_get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr64bit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serial_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
         
         <span class="n">resource</span> <span class="o">=</span> <span class="s1">&#39;devices&#39;</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">{{</span><span class="s1">&quot;address&quot;:</span><span class="se">{{</span><span class="s1">&quot;$eq&quot;:&quot;</span><span class="si">{</span><span class="n">addr64bit</span><span class="si">}</span><span class="s1">&quot;</span><span class="se">}}}}</span><span class="s1">&#39;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">{{</span><span class="s1">&quot;serial_id&quot;:</span><span class="se">{{</span><span class="s1">&quot;$eq&quot;:&quot;</span><span class="si">{</span><span class="n">serial_id</span><span class="si">}</span><span class="s1">&quot;</span><span class="se">}}}}</span><span class="s1">&#39;</span>
         <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_http_get</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">item</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1">## TODO - The creation of the Sensor should be based on the domain and class</span>
             <span class="c1">##        of the device to pick up any specific features and properties.</span>
             <span class="n">node</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">()</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">addr64bit</span> <span class="o">=</span> <span class="n">addr64bit</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">serial_id</span> <span class="o">=</span> <span class="n">serial_id</span>
             <span class="n">node</span><span class="o">.</span><span class="n">device_id</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;device_id&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">node_class</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">serial_id</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;serial_id&#39;</span><span class="p">]</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">addr64bit</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span>
@@ -147,10 +147,27 @@
     <span class="k">def</span> <span class="nf">_add_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
         <span class="n">payload</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_http_post</span><span class="p">(</span><span class="s1">&#39;devices&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">addr64bit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">serial_id</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_post_sensor_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">messasge</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
-        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">_post_sensor_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        {</span>
+<span class="sd">            &quot;serial_id&quot;: &quot;0013A200415D58CB&quot;,</span>
+<span class="sd">            &quot;data&quot;: [{&quot;bus_voltage&quot;: 10.56}]</span>
+<span class="sd">        }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;serial_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">serial_id</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">data_element</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">data_element</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_element</span><span class="p">)</span>
+        <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Posting </span><span class="si">{</span><span class="n">payload</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_http_post</span><span class="p">(</span><span class="s1">&#39;data_points&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+        
 </pre></div>
 
         </details>
@@ -219,21 +236,21 @@
 
     
 
-    <span class="k">def</span> <span class="nf">_get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr64bit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serial_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
         
         <span class="n">resource</span> <span class="o">=</span> <span class="s1">&#39;devices&#39;</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">{{</span><span class="s1">&quot;address&quot;:</span><span class="se">{{</span><span class="s1">&quot;$eq&quot;:&quot;</span><span class="si">{</span><span class="n">addr64bit</span><span class="si">}</span><span class="s1">&quot;</span><span class="se">}}}}</span><span class="s1">&#39;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">{{</span><span class="s1">&quot;serial_id&quot;:</span><span class="se">{{</span><span class="s1">&quot;$eq&quot;:&quot;</span><span class="si">{</span><span class="n">serial_id</span><span class="si">}</span><span class="s1">&quot;</span><span class="se">}}}}</span><span class="s1">&#39;</span>
         <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_http_get</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">item</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1">## TODO - The creation of the Sensor should be based on the domain and class</span>
             <span class="c1">##        of the device to pick up any specific features and properties.</span>
             <span class="n">node</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">()</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">addr64bit</span> <span class="o">=</span> <span class="n">addr64bit</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">serial_id</span> <span class="o">=</span> <span class="n">serial_id</span>
             <span class="n">node</span><span class="o">.</span><span class="n">device_id</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;device_id&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">node_class</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">serial_id</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;serial_id&#39;</span><span class="p">]</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">addr64bit</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span>
@@ -243,10 +260,26 @@
     <span class="k">def</span> <span class="nf">_add_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
         <span class="n">payload</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_http_post</span><span class="p">(</span><span class="s1">&#39;devices&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">addr64bit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">serial_id</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_post_sensor_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">messasge</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
-        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">_post_sensor_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        {</span>
+<span class="sd">            &quot;serial_id&quot;: &quot;0013A200415D58CB&quot;,</span>
+<span class="sd">            &quot;data&quot;: [{&quot;bus_voltage&quot;: 10.56}]</span>
+<span class="sd">        }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;serial_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">serial_id</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">data_element</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">data_element</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_element</span><span class="p">)</span>
+        <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Posting </span><span class="si">{</span><span class="n">payload</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_http_post</span><span class="p">(</span><span class="s1">&#39;data_points&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
 </pre></div>
 
         </details>
