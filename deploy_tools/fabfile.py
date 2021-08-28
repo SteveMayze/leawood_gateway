@@ -30,6 +30,7 @@ def _update_virtualenv():
         run(f'python -m venv .venv')
         run('.venv/bin/python -m pip install --upgrade pip')
     run('.venv/bin/pip install -r requirements.txt')
+    run('.venv/bin/pip pip install RPi.GPIO')
     run('.venv/bin/pip install --upgrade --force-reinstall digi-xbee')
 
 def _create_or_update_config():

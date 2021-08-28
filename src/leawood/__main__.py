@@ -12,6 +12,19 @@ import time
 import uuid
 from pathlib import Path
 
+# Only for the Raspberry Pi to issue a manual reset on the modem unit
+try:
+    import RPi.GPIO as gpio
+    gpio.setmode(gpio.BCM)
+    gpio.setup(18, gpio.OUT)
+    gpio.output(18, gpio.HIGH)
+    time.sleep(1)
+    gpio.output(18, gpio.LOW)
+    gpio.output(18, gpio.HIGH)
+    time.sleep(5)
+except ImportError:
+    pass
+
 MAX_WAIT = 2
 
 pid = Path('~/.leawood/pid')
