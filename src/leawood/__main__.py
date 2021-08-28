@@ -11,19 +11,9 @@ from leawood.adapters.rest import Rest
 import time
 import uuid
 from pathlib import Path
+from  leawood.adapters import rpi
 
 # Only for the Raspberry Pi to issue a manual reset on the modem unit
-try:
-    import RPi.GPIO as gpio
-    gpio.setmode(gpio.BCM)
-    gpio.setup(18, gpio.OUT)
-    gpio.output(18, gpio.HIGH)
-    time.sleep(1)
-    gpio.output(18, gpio.LOW)
-    gpio.output(18, gpio.HIGH)
-    time.sleep(5)
-except ImportError:
-    pass
 
 MAX_WAIT = 2
 
@@ -44,6 +34,7 @@ def wait_for_runnning_state(worker, state):
 logger = None
 
 def start(config: Config):
+    rpi.reset()
     logger.debug('start begin')
     logger.info('Checkig PID')
     # On the Pi, the /dev/urandom is not available on startup. It is not known
@@ -87,6 +78,7 @@ def start(config: Config):
     messagebus.shutdown(message_bus)
     wait_for_runnning_state(message_bus, False)
     gateway.close()
+    rpi.close()
     logger.debug('end')
 
 def stop(config: Config):
@@ -94,6 +86,7 @@ def stop(config: Config):
     if pid.exists():
         pid.unlink()
     logger.debug('stop end')
+    rpi.close()
 
 
 if __name__ == "__main__":
