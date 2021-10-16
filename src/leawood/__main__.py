@@ -1,6 +1,8 @@
 
 import logging
 import sys
+
+from digi.xbee.exception import XBeeException
 from leawood.config import Config
 
 from leawood.domain.hardware import Gateway
@@ -75,6 +77,10 @@ def start(config: Config):
     except KeyboardInterrupt:
         logger.info('key board interrupt. Closing down')
         pass
+    except XBeeException as err:
+        logger.info(f'XBee exception - shutting down: {err}')
+        pass
+
     messagebus.shutdown(message_bus)
     wait_for_runnning_state(message_bus, False)
     gateway.close()
