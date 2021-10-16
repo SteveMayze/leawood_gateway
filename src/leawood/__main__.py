@@ -56,7 +56,12 @@ def start(config: Config):
 
     logger.info(f'Creating a gateway with {config}')
     repository = Rest(config)
-    modem = XBeeModem(config)
+    try:
+        modem = XBeeModem(config)
+    except XBeeException as err:
+        logger.info(f'XBee exception - shutting down: {err}')
+        rpi.close()
+        return
     message_bus = LocalMessageBus()
     gateway = Gateway(message_bus, repository, modem)
     messagebus.activate(message_bus)
