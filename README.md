@@ -59,17 +59,35 @@ optional arguments:
   -S sleeptime, --sleeptime sleeptime
                         The sleep time when waiting to request new information
 
-$
 ```
+
+An ini file needs to be setup to contain the connection details to the gateway radio unit
+
+```ini
+[general]
+# logfile=leawood_gateway.log
+
+[rest]
+username = <REST_USER>
+password = <REST_PASSWORD>
+
+[modem]
+rest = <REST_END_POINT>
+serial-port =/dev/ttyS0
+serial-baud = 9600
+sleep-time = 10
+```
+
 
 ## Running the tests
 The tests use pytest. When ran normally, there will be an internal version of a gateway created
 and started. The tests can be ran against an indepentant gateway i.e. a staging gateway by setting
 an envrionment variable to indicate to the tests no to user the internal version.
 
-The STAGING_GATEWAY defines the addres the pseudo sensor should use ( this will be factored out in 
-another iteration of changes). The STAGED flag indicates whether to create the internal gateway service
-or to use another hosted elsewhere.
+The STAGING_GATEWAY defines the address of the gateway that the pseudo sensor should use (this might 
+be factored out in another iteration of changes). The STAGED flag indicates whether to create the 
+internal gateway service or to use another hosted elsewhere.
+
 
 Linux
 ```shell

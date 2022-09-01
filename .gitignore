@@ -229,3 +229,4 @@ Lib
 Scripts
 .ssh
 config*.ini
+prod_config_template.ini
