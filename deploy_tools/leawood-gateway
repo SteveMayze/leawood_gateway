@@ -1,0 +1,29 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides: leawood-gateway
+# Required-Start: $syslog
+# Required-Stop: $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Leawood Gateway process
+# Description:
+### END INIT INFO
+ 
+case "$1" in
+    start)
+        echo "leawood-gateway is starting"
+        # Start Programm
+        /home/pi/python/leawood_gateway/leawood-gateway
+        ;;
+    stop)
+        echo "leawood-gateway is ending"
+        # End Programm
+        killall leawood-gateway
+        ;;
+    *)
+        echo "Usage: /etc/init.d/leawood-gateway {start|stop}"
+        exit 1
+        ;;
+esac
+ 
+exit 0
