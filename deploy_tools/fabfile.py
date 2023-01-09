@@ -17,7 +17,7 @@ def deploy():
 def _stop_gateway():
     if exists('src/leawood'):
         if  exists('/etc/init.d/leawood-gateway'):
-            sudo('/etc/init.d/leawood-gateway start &')
+            sudo('/etc/init.d/leawood-gateway stop')
         else:
             run('.venv/bin/python -m leawood stop')        
 
