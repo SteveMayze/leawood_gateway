@@ -57,7 +57,7 @@ class TestGateway:
         try:
 
             # Sensor to send READY.
-            logger.info('Sending Ready to the gateway node')
+            logger.info(f'Sending Ready to the gateway node addr: {staging_address}')
             sensor.send_message( Ready('0013A200415D58CB', staging_address, None))
             time.sleep(5)
 

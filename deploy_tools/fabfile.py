@@ -1,5 +1,5 @@
 from fabric.contrib.files import  exists, upload_template
-from fabric.api import cd, env, local, run
+from fabric.api import cd, env, local, run, sudo
 
 REPO_URL='https://github.com/SteveMayze/leawood_gateway.git'
 
@@ -11,11 +11,15 @@ def deploy():
         _get_last_source()
         _update_virtualenv()
         _create_or_update_config()
-        # _start_the_gateway()
+        _create_or_update_daemon()
+        _start_the_gateway()
 
 def _stop_gateway():
     if exists('src/leawood'):
-        run('.venv/bin/python -m leawood stop')        
+        if  exists('/etc/init.d/leawood-gateway'):
+            sudo('/etc/init.d/leawood-gateway start &')
+        else:
+            run('.venv/bin/python -m leawood stop')        
 
 def _get_last_source():
     if exists('.git'):
@@ -37,6 +41,13 @@ def _create_or_update_config():
     upload_template('prod_config_template.ini', 'config.ini')
 
 def _start_the_gateway():
-     run('nohup .venv/bin/python  -m leawood -c ~/python/leawood_gateway/config.ini start &')
+    ### run('nohup .venv/bin/python  -m leawood -c ~/python/leawood_gateway/config.ini start &')
+    run('sudo /etc/init.d/leawood-gateway start &')
+
+
+def _create_or_update_daemon():
+    if  not exists('/etc/init.d/leawood-gateway'):
+        sudo('cp leawood-gateway /etc/init.d/')
+        sudo('chmod 755 /etc/init.d/leawood-gateway')
 
 
