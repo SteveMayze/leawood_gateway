@@ -17,7 +17,7 @@ def deploy():
 def _stop_gateway():
     if exists('src/leawood'):
         if  exists('/etc/init.d/leawood-gateway'):
-            sudo('/etc/init.d/leawood-gateway stop')
+            run('/etc/init.d/leawood-gateway stop')
         else:
             run('.venv/bin/python -m leawood stop')        
 
@@ -36,6 +36,7 @@ def _update_virtualenv():
     run('.venv/bin/pip install -r requirements.txt')
     run('.venv/bin/pip install RPi.GPIO')
     run('.venv/bin/pip install --upgrade --force-reinstall digi-xbee')
+    run('chmod +x leawood-gateway')
 
 def _create_or_update_config():
     upload_template('prod_config_template.ini', 'config.ini')
@@ -47,7 +48,7 @@ def _start_the_gateway():
 
 def _create_or_update_daemon():
     if  not exists('/etc/init.d/leawood-gateway'):
-        sudo('cp leawood-gateway /etc/init.d/')
-        sudo('chmod 755 /etc/init.d/leawood-gateway')
+        run('cp leawood-gateway /etc/init.d/')
+        run('chmod 755 /etc/init.d/leawood-gateway')
 
 

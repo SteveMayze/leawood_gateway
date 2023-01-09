@@ -19,6 +19,7 @@ case "$1" in
         echo "leawood-gateway is ending"
         # End Programm
         killall leawood-gateway
+        exit 0
         ;;
     *)
         echo "Usage: /etc/init.d/leawood-gateway {start|stop}"
