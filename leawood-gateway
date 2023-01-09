@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export BASE=~/python/leawood_gateway
+export BASE=/home/pi/python/leawood_gateway
 export PYTHON_PRG=$BASE/.venv/bin/python
 
 $PYTHON_PRG -m leawood -c $BASE/config.ini -v -l ~/.leawood/gateway.log start
