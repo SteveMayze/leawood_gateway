@@ -181,11 +181,11 @@ def detokenise(datastream: bytearray) -> TypedDict:
 
     if token_0 == telegram_token['serial_id']:
         payload_data['serial_id'] = datastream[3:11].hex()
-        logger.info(f"detokenise: serial_id: {payload_data['operation']}")
+        logger.info(f"detokenise: serial_id: {payload_data['serial_id']}")
 
     idx = 1
     data = datastream[11:]
-    logger.info(f"detokenise: data (serial_id): {data}")
+    logger.info(f"detokenise: data: {data}")
     if payload_data['operation'] == 'NODEINTRO':
         prop, val = (data[0:1], data[1:2]) ## domain
         payload_data[token_telegram[prop[0]]] = token_telegram[val[0]]
