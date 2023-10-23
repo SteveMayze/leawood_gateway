@@ -172,9 +172,11 @@ def detokenise(datastream: bytearray) -> TypedDict:
     operation = None
     if token_0 == telegram_token['operation']:
         payload_data['operation'] = token_telegram[datastream[1:2][0]]
+        logger.debug(f"detokenise: operation: {payload_data['operation']}")
     token_0 = datastream[2:3][0]
     if token_0 == telegram_token['serial_id']:
         payload_data['serial_id'] = datastream[3:11].hex()
+        logger.debug(f"detokenise: serial_id: {payload_data['operation']}")
 
     idx = 1
     data = datastream[11:]
@@ -198,6 +200,6 @@ def detokenise(datastream: bytearray) -> TypedDict:
             idx += 1
             data = data[2:]
             
-    logger.info(f'detokenise: parsed tokens: {datastream}')
+    logger.info(f'detokenise: returning parsed tokens: {datastream}')
 
     return payload_data

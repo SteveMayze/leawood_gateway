@@ -2,6 +2,14 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../FieldDevice_R3"
 		}
-	]
+	],
+	"settings": {
+		"files.associations": {
+			"twi0_util.h": "c"
+		}
+	}
 }

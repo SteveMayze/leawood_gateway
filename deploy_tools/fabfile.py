@@ -11,8 +11,8 @@ def deploy():
         _get_last_source()
         _update_virtualenv()
         _create_or_update_config()
-        _create_or_update_daemon()
-    _start_the_gateway()
+        ## _create_or_update_daemon()
+    ## _start_the_gateway()
 
 def _stop_gateway():
     if exists('src/leawood'):
