@@ -170,16 +170,21 @@ def detokenise(datastream: bytearray) -> TypedDict:
     payload_data = {}
     token_0 = datastream[0:1][0]
     operation = None
+    logger.debug(f"detokenise: token_0 (operation): {token_0}")
+
     if token_0 == telegram_token['operation']:
         payload_data['operation'] = token_telegram[datastream[1:2][0]]
         logger.debug(f"detokenise: operation: {payload_data['operation']}")
     token_0 = datastream[2:3][0]
+    logger.debug(f"detokenise: token_0 (serial_id): {token_0}")
+
     if token_0 == telegram_token['serial_id']:
         payload_data['serial_id'] = datastream[3:11].hex()
         logger.debug(f"detokenise: serial_id: {payload_data['operation']}")
 
     idx = 1
     data = datastream[11:]
+    logger.debug(f"detokenise: data (serial_id): {data}")
     if payload_data['operation'] == 'NODEINTRO':
         prop, val = (data[0:1], data[1:2]) ## domain
         payload_data[token_telegram[prop[0]]] = token_telegram[val[0]]
