@@ -77,7 +77,8 @@ STX = 0x02
 HEADER_GROUP = 0x10
 OPERATION_GROUP = 0x20
 PROPERTY_GROUP = 0x30
-METADATA_GROUP = 0x04
+METADATA_DOMAIN_GROUP = 0x40
+METADATA_CLASS_GROUP = 0x50
 
 telegram_token = {
 
@@ -99,9 +100,12 @@ telegram_token = {
     "NODEINTRO": OPERATION_GROUP | 0x06,
     "NODEINTROACK": OPERATION_GROUP | 0x07,
 
-    'power': METADATA_GROUP | 0x01,
-    'capacity': METADATA_GROUP | 0x04,
-    'sensor': METADATA_GROUP | 0x03,
+    'power': METADATA_DOMAIN_GROUP | 0x01,
+    'capacity': METADATA_DOMAIN_GROUP | 0x02,
+    'rate': METADATA_DOMAIN_GROUP | 0x03,
+    
+    'sensor': METADATA_CLASS_GROUP | 0x01,
+    'actuator': METADATA_CLASS_GROUP | 0x01,
 }
 
 token_telegram = {}
@@ -162,7 +166,7 @@ def detokenise(datastream: bytearray) -> TypedDict:
     """
     Rehydrates a Telegrm from a byte array of tokens.
     """
-    logger.info(f'tokens {datastream.hex()}')
+    logger.info(f'detokenise: tokens {datastream.hex()}')
     payload_data = {}
     token_0 = datastream[0:1][0]
     operation = None
@@ -193,4 +197,7 @@ def detokenise(datastream: bytearray) -> TypedDict:
             payload_data[f'p{idx}'] = token_telegram[val[0]]
             idx += 1
             data = data[2:]
+            
+    logger.info(f'detokenise: parsed tokens: {datastream}')
+
     return payload_data
