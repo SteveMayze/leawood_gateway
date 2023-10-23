@@ -168,6 +168,7 @@ def detokenise(datastream: bytearray) -> TypedDict:
     """
     logger.info(f'detokenise: tokens {datastream.hex()}')
     payload_data = {}
+    logger.debug("detokenise: Getting the operation")
     token_0 = datastream[0:1][0]
     operation = None
     logger.debug(f"detokenise: token_0 (operation): {token_0}")
