@@ -21,6 +21,7 @@ MAX_WAIT = 2
 
 pid = Path('~/.leawood/pid')
 pid = pid.expanduser()
+logger = None
 
 def wait_for_runnning_state(worker, state):
     start_time = time.time()
@@ -33,7 +34,6 @@ def wait_for_runnning_state(worker, state):
                 raise error 
             time.sleep( 0.5)    
 
-logger = None
 
 def start(config: Config):
     rpi.reset()
@@ -104,20 +104,18 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     config = Config(sys.argv[1:])
-
-    if 'logfile' in config.config_data:
-        logging.basicConfig(filename=config.config_data['logfile'], filemode='w', level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.INFO)
-
+    
     log_level = config.debug
 
     logger_level = {
         True: logging.DEBUG,
         False: logging.INFO
     }[log_level]
-
-    logger.setLevel(logger_level)
+    
+    if 'logfile' in config.config_data:
+        logging.basicConfig(filename=config.config_data['logfile'], filemode='w', level=logger_level)
+    else:
+        logging.basicConfig(level=logger_level)
 
     logger.debug(f'begin')   
     logger.debug(f'command: {config.config_data["command"]}')

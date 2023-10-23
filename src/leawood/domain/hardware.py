@@ -158,17 +158,17 @@ class Gateway(Node):
 
 
     def handle_ready(self, message: Message):
-        logger.info('Operation READY, sending DATA_REQ')
+        logger.info('Operation READY')
         ## First of all determine if this is from a registered node
         node = self.repository.get_node(message.serial_id)
         if node != None:
             ## If so, then send a request for data.
-            logger.info(f'The node {node} has requested further instruction')
+            logger.info(f'The requesting DATA from node {node}')
             newMessage = DataReq(message.serial_id, message.addr64bit, None)
             self.modem.send_message(newMessage)
         else:
             ## Else, send a request for introduction
-            logger.info(f'The node {node} has requested further instruction')
+            logger.info(f'The requesting an introduction from node {node}')
             newMessage = NodeIntroReq(message.serial_id, message.addr64bit, None)
             self.modem.send_message(newMessage)
 
