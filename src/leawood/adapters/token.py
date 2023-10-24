@@ -105,7 +105,7 @@ telegram_token = {
     'rate': METADATA_DOMAIN_GROUP | 0x03,
     
     'sensor': METADATA_CLASS_GROUP | 0x01,
-    'actuator': METADATA_CLASS_GROUP | 0x01,
+    'actuator': METADATA_CLASS_GROUP | 0x02,
 }
 
 token_telegram = {}
