@@ -8,7 +8,7 @@ from leawood.domain import messages
 from leawood.config import Config
 import logging
 from  digi.xbee import devices
-
+from digi.xbee.exception import TransmitException
 
 logger = logging.getLogger(__name__)
 
@@ -48,15 +48,19 @@ class XBeeModem(Modem):
         self._receive_callback = None
 
     def send_message(self, message: Message):
-        self.open()
-        logger.info(f'Creating the remote device at {message.addr64bit}')
-        remote_device = devices.RemoteXBeeDevice(self.xbee, devices.XBee64BitAddress.from_hex_string(message.addr64bit))
-        logger.info(f'Sending from {self.xbee.get_64bit_addr()} to {message.addr64bit}')
-        ## TODO - Need to add the operation to the payload
-        ##        and to convert this to a XBee format.
-        xbee_telegram = create_telegram_from_message(self, message)
-        logger.info(f'message {repr(xbee_telegram)}')
-        self.xbee.send_data(remote_device, xbee_telegram.as_bytearray())
+        try:
+            self.open()
+            logger.info(f'Creating the remote device at {message.addr64bit}')
+            remote_device = devices.RemoteXBeeDevice(self.xbee, devices.XBee64BitAddress.from_hex_string(message.addr64bit))
+            logger.info(f'Sending from {self.xbee.get_64bit_addr()} to {message.addr64bit}')
+            ## TODO - Need to add the operation to the payload
+            ##        and to convert this to a XBee format.
+            xbee_telegram = create_telegram_from_message(self, message)
+            logger.info(f'message {repr(xbee_telegram)}')
+            self.xbee.send_data(remote_device, xbee_telegram.as_bytearray())
+        except TransmitException as e:
+            logger.error(f"send_message: There was a communication error when sending {message}, {e}")
+
 
     def register_receive_callback(self, callback: Callable):
         """

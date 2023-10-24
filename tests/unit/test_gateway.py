@@ -33,13 +33,13 @@ def wait_for_runnning_state(worker, state):
 
 
 def test_message():
-    ready = Ready('ABCD', '00001', None)
-    assert ready.serial_id == 'ABCD'
+    ready = Ready('0102030405060708090A', '00001', None)
+    assert ready.serial_id == '0102030405060708090A'
     assert ready.addr64bit == '00001'
     assert ready.payload == None
 
-    ready = Data('ABCD', '00001', {"bus_voltage": "5.0"})
-    assert ready.serial_id == 'ABCD'
+    ready = Data('0102030405060708090A', '00001', {"bus_voltage": "5.0"})
+    assert ready.serial_id == '0102030405060708090A'
     assert ready.addr64bit == '00001'
     assert ready.payload == {"bus_voltage": "5.0"}
 
@@ -47,7 +47,7 @@ def test_message():
 def test_receive_message(repository, modem, message_bus, gateway, modem_message_builder):
     payload = {
         'operation': 'DATA',
-        'serial_id': '0102030405060708',
+        'serial_id': '0102030405060708090A',
         'bus_voltage': 10.5
     }
     rcv_message = modem_message_builder.create_modem_message('00001', payload)
@@ -56,7 +56,7 @@ def test_receive_message(repository, modem, message_bus, gateway, modem_message_
     # Existing node
     # Push the message to the MQTT queue
     ## TODO - 01.08.21 - This is passing and should not be!
-    expected = Data('0102030405060708', '00001', {"bus_voltage": 10.5})
+    expected = Data('0102030405060708090A', '00001', {"bus_voltage": 10.5})
     message = gateway.message_bus.pop()
     assert message == expected
     assert message.payload == expected.payload

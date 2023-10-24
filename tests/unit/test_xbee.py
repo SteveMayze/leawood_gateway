@@ -8,12 +8,12 @@ def test_create_message_from_data():
     payload_dict = {
         'bus_voltage': 10.5,
     }
-    telegram = Telegram('090a0b0c0d0e0f10', 'DATA', payload_dict)
+    telegram = Telegram('0102030405060708090A', 'DATA', payload_dict)
     payload = messages.transform_telegram_to_bytearray(telegram)
-    message = messages.create_message_from_data('0102030405060708', payload)
+    message = messages.create_message_from_data('0102030405060708090A', payload)
     assert message != None
     assert message.operation == "DATA"
-    assert message.addr64bit == "0102030405060708"
+    assert message.addr64bit == "0102030405060708090A"
     assert len(message.payload) == 1
     assert message.payload['bus_voltage'] == 10.5
 
@@ -28,12 +28,12 @@ def test_create_message_from_nodeintro():
         'p2': 'shunt_voltage',
         'p3': 'load_current',
     }
-    telegram = Telegram('090a0b0c0d0e0f10', 'NODEINTRO', payload_dict)
+    telegram = Telegram('0102030405060708090A', 'NODEINTRO', payload_dict)
     payload = messages.transform_telegram_to_bytearray(telegram)
-    message = messages.create_message_from_data('010203040506070809', payload)
+    message = messages.create_message_from_data('0102030405060708', payload)
     assert message != None
     assert message.operation == "NODEINTRO"
-    assert message.addr64bit == "010203040506070809"
+    assert message.addr64bit == "0102030405060708"
     assert len(message.payload) == 5
     assert message.payload['p1'] == 'bus_voltage'
 
@@ -53,7 +53,7 @@ def test_create_telegram_from_message_data():
         'bus_voltage': 10.5,
         'load_current': 3.8,
     }
-    telegram = Telegram('090a0b0c0d0e0f10', 'DATA', payload_dict)
+    telegram = Telegram('0102030405060708090A', 'DATA', payload_dict)
     payload = messages.transform_telegram_to_bytearray(telegram)
     message = messages.create_message_from_data('0102030405060708', payload)
     telegram = xbee.create_telegram_from_message(modem, message)

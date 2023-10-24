@@ -58,7 +58,7 @@ class TestGateway:
 
             # Sensor to send READY.
             logger.info(f'Sending Ready to the gateway node addr: {staging_address}')
-            sensor.send_message( Ready('0013A200415D58CB', staging_address, None))
+            sensor.send_message( Ready('0102030405060708090A', staging_address, None))
             time.sleep(5)
 
             # Verify the Data request.
@@ -77,7 +77,7 @@ class TestGateway:
                 "load_current": rand_current
             }
             
-            sensor.send_message(Data('0013A200415D58CB', staging_address, payload))
+            sensor.send_message(Data('0102030405060708090A', staging_address, payload))
             time.sleep(7)
 
             message = wait_for_message(sensor.message_bus)
@@ -106,7 +106,7 @@ class TestGateway:
 
             # Sensor to send READY.
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Ready('0013A200415D58CB', staging_address, None))
+            sensor.send_message( Ready('0102030405060708090A', staging_address, None))
             time.sleep(5)
 
             payload = {
@@ -115,7 +115,7 @@ class TestGateway:
                 "load_current": 3.2
             }
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Data('0013A200415D58CB', staging_address, payload))
+            sensor.send_message( Data('0102030405060708090A', staging_address, payload))
 
         finally:
             sensor.close()            

@@ -5,9 +5,9 @@ import uuid
 class TestRepository:
 
     def test_repository_get_node(self, repository):
-        node = repository.get_node('0013A200415D58CB')
+        node = repository.get_node('0102030405060708090A')
         assert node != None
-        assert node.serial_id == '0013A200415D58CB'
+        assert node.serial_id == '0102030405060708090A'
         assert node.description == 'The power monitor  on the mobile chicken coop'
 
 
