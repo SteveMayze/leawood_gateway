@@ -180,7 +180,7 @@ def detokenise(datastream: bytearray) -> TypedDict:
     logger.debug(f"detokenise: token_0 (serial_id): {token_0}")
 
     if token_0 == telegram_token['serial_id']:
-        payload_data['serial_id'] = datastream[3:11].hex()
+        payload_data['serial_id'] = datastream[3:13].hex()
         logger.info(f"detokenise: serial_id: {payload_data['serial_id']}")
 
     idx = 1
