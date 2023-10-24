@@ -194,6 +194,7 @@ def detokenise(datastream: bytearray) -> TypedDict:
         payload_data[token_telegram[prop[0]]] = token_telegram[val[0]]
         data = data[4:]
 
+    logger.debug(f"detokenise: data length: {len(data)}")
     while len(data) > 0:
         if payload_data['operation'] == 'DATA':
             prop, val = (data[0:1], data[1:5])
