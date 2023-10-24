@@ -184,7 +184,7 @@ def detokenise(datastream: bytearray) -> TypedDict:
         logger.info(f"detokenise: serial_id: {payload_data['serial_id']}")
 
     idx = 1
-    data = datastream[11:]
+    data = datastream[13:]
     logger.debug(f"detokenise: data: {data}")
     if payload_data['operation'] == 'NODEINTRO':
         prop, val = (data[0:1], data[1:2]) ## domain
