@@ -196,6 +196,7 @@ def detokenise(datastream: bytearray) -> TypedDict:
 
     logger.debug(f"detokenise: data length: {len(data)}")
     while len(data) > 0:
+        logger.debug(f"detokenise: data length: {data.hex()}")
         if payload_data['operation'] == 'DATA':
             prop, val = (data[0:1], data[1:5])
             payload_data[token_telegram[prop[0]]] = struct.unpack('f', val)[0]
