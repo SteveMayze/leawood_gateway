@@ -188,12 +188,12 @@ def detokenise(datastream: bytearray) -> TypedDict:
     logger.debug(f"detokenise: data: {data}")
     if payload_data['operation'] == 'NODEINTRO':
         prop, val = (data[0:1], data[1:2]) ## domain
-        logger.debug(f"NODEINTRO: (domain) prop: {prop}, val: {val}")
         payload_data[token_telegram[prop[0]]] = token_telegram[val[0]]
+        logger.debug(f"NODEINTRO: (domain) prop: {prop}, val: {val} - {token_telegram[prop[0]]}: {token_telegram[val[0]]}")
 
         prop, val = (data[2:3], data[3:4]) ## class
-        logger.debug(f"NODEINTRO: (class) prop: {prop}, val: {val}")
         payload_data[token_telegram[prop[0]]] = token_telegram[val[0]]
+        logger.debug(f"NODEINTRO: (class) prop: {prop}, val: {val} - {token_telegram[prop[0]]}: {token_telegram[val[0]]}")
         data = data[4:]
 
     logger.debug(f"detokenise: data length: {len(data)}")
