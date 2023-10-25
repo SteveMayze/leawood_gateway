@@ -26,6 +26,9 @@ class Message:
         self.addr64bit = addr64bit.upper()
         self.payload = payload
 
+    def __str__(self):
+        return f"Message: operation: {self.operation}, serial_id: {self.serial_id}, addr64bit: {self.addr64bit}, payload: {self.payload}"
+
 @dataclass
 class Ready(Message):
 

@@ -58,6 +58,8 @@ class Modem(abc.ABC):
         """
         raise NotImplementedError
 
+    def __str__(self):
+        return "Modem"
 
 
 class Sensor(Node):
@@ -128,6 +130,8 @@ class Sensor(Node):
     def close(self):
         self.modem.close()        
 
+    def __str__(self):
+        return "Node: serial_id: {self.serial_id}, address: {self.addr64bit}"
 
 class Gateway(Node):
     """
@@ -208,5 +212,8 @@ class Gateway(Node):
 
     def close(self):
         if self.modem:
-            self.modem.close()        
+            self.modem.close()  
+
+    def __str__(self):
+        return f"Gateway: serial_id: {self.serial_id}, address: {self.addr64bit}"      
 
