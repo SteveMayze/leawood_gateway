@@ -1,11 +1,14 @@
 
 import logging
 
-from leawood.domain.messages import Data, DataAck, Ready, DataReq
+from leawood.domain.messages import Data, DataAck, Ready, DataReq, NodeIntroReq, NodeIntro, IntroAck
 from leawood.services.messagebus import MessageBus
+from leawood.services.repository import Repository
 from leawood.domain.hardware import Sensor, Gateway
 import time
 import random
+import uuid
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -39,6 +42,52 @@ class TestGateway:
     """
     tests/integration/test_gateway.py::TestGateway::test_gateway_operation
     """
+    def test_gateway_intro_operation(self, repository: Repository, sensor: Sensor, gateway: Gateway, staging_address: str):
+        """"
+        Tests the operation from the point of view of a node seding the READY
+        operation and the response from the gateway to say that it is free
+        to send i.e. DATAREQ and then the response of the DATA and then the final 
+        DATAACK.
+        """
+    
+        """
+        RED   0013A20041AE49D4
+        GREEN 0013A200415D58CB
+        WHITE 0013A200415C0F82
+        """
+
+        try:
+
+            # Sensor to send READY.
+            random_serial_id = uuid.uuid1().hex[:20]
+            logger.info(f'Sending Ready to the gateway node addr: {staging_address}')
+            sensor.send_message( Ready(random_serial_id, staging_address, None))
+            time.sleep(5)
+
+            # Verify the Data request.
+            message = wait_for_message(sensor.message_bus)
+            assert message != None
+            assert isinstance(message, NodeIntroReq)
+            payload = {
+                "domain": "power",
+                "class": "sensor"
+            }
+           
+            sensor.send_message(NodeIntro(random_serial_id, staging_address, payload))
+            time.sleep(7)
+
+            message = wait_for_message(sensor.message_bus)
+            logger.info(f"Actual Message: {message}")
+            assert isinstance(message, IntroAck)
+
+            _node = repository.get_node(message.serial_id)
+
+            assert _node.serial_id == str.upper(random_serial_id)
+            assert _node.node_class == "SENSOR"
+
+        finally:
+            sensor.close()            
+
 
     def test_gateway_data_operation(self, sensor: Sensor, gateway: Gateway, staging_address: str):
         """"

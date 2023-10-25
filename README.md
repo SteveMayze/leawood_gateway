@@ -98,7 +98,7 @@ export STAGED=(True|False)
 Powershell
 ```powershell
 $Env:STAGING_GATEWAY = "<GATEWAY ADDRESS>"
-$Env:export STAGED = ("True"|"False")
+$Env:STAGED = ("True"|"False")
 ```
 
 ```

@@ -33,7 +33,7 @@ class MessageBus(abc.ABC):
             message = self.pop()
             if message != None:
                 event_handler = self.message_handlers[type(message)]
-                logger.info(f'Calling the messagse handler {event_handler}')
+                logger.info(f'Calling the message handler {event_handler}')
                 event_handler(message)
                 self.message_queue.task_done()
 

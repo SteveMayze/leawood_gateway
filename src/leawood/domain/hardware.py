@@ -190,9 +190,13 @@ class Gateway(Node):
     def handle_new_node(self, message: Message):
         ## TODO - The type of node needs to be qualified so that the
         ##        corrent object is created.
+        logger.debug(f"Handling a new nde for {message}")
         node = Sensor(None, None)
-        node.addr64bit = message.addr64bit
-        node.serial_id = message.serial_id
+        node.addr64bit = str.upper(message.addr64bit)
+        node.serial_id = str.upper(message.serial_id)
+        node.node_class = str.upper(message.payload['class'])
+        node.domain = str.upper(message.payload['domain'])
+        node.name = str.upper(message.serial_id)
         self.repository.add_node(node)
         ackMessage = IntroAck(message.serial_id, message.addr64bit, None)
         self.modem.send_message(ackMessage)
