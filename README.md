@@ -101,13 +101,18 @@ $Env:STAGING_GATEWAY = "<GATEWAY ADDRESS>"
 $Env:STAGED = ("True"|"False")
 ```
 
-```
+```bash
 pytest
 ```
 
 Running the tests with logging
-```
+```bash
 pytest -v -s --log-cli-level INFO
+```
+
+Running a specific test
+```bash
+ pytest -v -s --log-cli-level DEBUG .\tests\integration -k "test_gateway_intro_operation"
 ```
 
 ## Deployment
