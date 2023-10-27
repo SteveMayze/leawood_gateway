@@ -8,7 +8,7 @@ from leawood.domain.hardware import Sensor, Gateway
 import time
 import random
 import uuid
-
+import pytest
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -39,9 +39,13 @@ def wait_for_empty_queue(message_bus: MessageBus, state: bool):
 
 
 class TestGateway:
+
+    random_serial_id = uuid.uuid1().hex[:20]
+
     """
     tests/integration/test_gateway.py::TestGateway::test_gateway_operation
     """
+    @pytest.mark.order1
     def test_gateway_intro_operation(self, repository: Repository, sensor: Sensor, gateway: Gateway, staging_address: str):
         """"
         Tests the operation from the point of view of a node seding the READY
@@ -59,9 +63,8 @@ class TestGateway:
         try:
 
             # Sensor to send READY.
-            random_serial_id = uuid.uuid1().hex[:20]
             logger.info(f'Sending Ready to the gateway node addr: {staging_address}')
-            sensor.send_message( Ready(random_serial_id, staging_address, None))
+            sensor.send_message( Ready(self.random_serial_id, staging_address, None))
             time.sleep(5)
 
             # Verify the Data request.
@@ -73,7 +76,7 @@ class TestGateway:
                 "class": "sensor"
             }
            
-            sensor.send_message(NodeIntro(random_serial_id, staging_address, payload))
+            sensor.send_message(NodeIntro(self.random_serial_id, staging_address, payload))
             time.sleep(7)
 
             message = wait_for_message(sensor.message_bus)
@@ -82,13 +85,13 @@ class TestGateway:
 
             _node = repository.get_node(message.serial_id)
 
-            assert _node.serial_id == str.upper(random_serial_id)
+            assert _node.serial_id == str.upper(self.random_serial_id)
             assert _node.node_class == "SENSOR"
 
         finally:
             sensor.close()            
 
-
+    @pytest.mark.order2
     def test_gateway_data_operation(self, sensor: Sensor, gateway: Gateway, staging_address: str):
         """"
         Tests the operation from the point of view of a node seding the READY
@@ -107,7 +110,7 @@ class TestGateway:
 
             # Sensor to send READY.
             logger.info(f'Sending Ready to the gateway node addr: {staging_address}')
-            sensor.send_message( Ready('0102030405060708090A', staging_address, None))
+            sensor.send_message( Ready(self.random_serial_id, staging_address, None))
             time.sleep(5)
 
             # Verify the Data request.
@@ -126,7 +129,7 @@ class TestGateway:
                 "load_current": rand_current
             }
             
-            sensor.send_message(Data('0102030405060708090A', staging_address, payload))
+            sensor.send_message(Data(self.random_serial_id, staging_address, payload))
             time.sleep(7)
 
             message = wait_for_message(sensor.message_bus)
@@ -144,7 +147,7 @@ class TestGateway:
         finally:
             sensor.close()            
 
-
+    @pytest.mark.order3
     def test_sensor_send(self, sensor, gateway, staging_address):
         """
         A rough test to send a message without verification. This is used in conjunction
@@ -155,16 +158,16 @@ class TestGateway:
 
             # Sensor to send READY.
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Ready('0102030405060708090A', staging_address, None))
+            sensor.send_message( Ready(self.random_serial_id, staging_address, None))
             time.sleep(5)
 
             payload = {
-                "bus_voltage": 10.5,
-                "shunt_voltage": 0.85,
-                "load_current": 3.2
+                "bus_voltage": 10.500067,
+                "shunt_voltage": 0.8500054,
+                "load_current": 3.200066
             }
             logger.info('Sending Ready to the gateway node')
-            sensor.send_message( Data('0102030405060708090A', staging_address, payload))
+            sensor.send_message( Data(self.random_serial_id, staging_address, payload))
 
         finally:
             sensor.close()            

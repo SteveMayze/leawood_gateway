@@ -1,18 +1,20 @@
 
 from leawood.domain.hardware import Sensor
 import uuid
+import pytest
+import logging
 
 class TestRepository:
 
-    def test_repository_get_node(self, repository):
-        node = repository.get_node('0102030405060708090A')
-        assert node != None
-        assert node.serial_id == '0102030405060708090A'
-        assert node.description == 'The power monitor  on the mobile chicken coop'
+    logger = logging.getLogger('__name__')
+    test_addr = uuid.uuid1().hex[:16]
 
+    def get_addr(self):
+        return self.test_addr.upper()
 
+    @pytest.mark.order1
     def test_repository_add_node(self, repository):
-        random_addr = uuid.uuid1().hex[:16]
+        random_addr = self.get_addr()
         node = Sensor()
         node.addr64bit = random_addr
         node.domain = 'POWER'
@@ -21,7 +23,20 @@ class TestRepository:
         node.name = f'TEST GENERATED DEVICE {random_addr}'
         node.description = 'A device generated via integration tests'
         node = repository.add_node(node)
+
+        node2 = repository.get_node(random_addr)
+
+        assert node2 != None
+        assert node2.serial_id == random_addr.upper()
+        assert node2.description == 'A device generated via integration tests'
+
+    @pytest.mark.order2
+    def test_repository_get_node(self, repository):
+        random_addr = self.get_addr()
+        node = repository.get_node(random_addr)
         assert node != None
-        assert node.serial_id == random_addr.upper()
+        assert node.serial_id == random_addr
         assert node.description == 'A device generated via integration tests'
 
+
+   
