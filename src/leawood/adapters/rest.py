@@ -103,7 +103,7 @@ class Rest(Repository):
         data = []
         for name, val in message.payload.items():
             data_element = {}
-            data_element[name] = round(val, 3)
+            data_element[name] = round(val, 5)
             data.append(data_element)
         payload['data'] = data
         payload = json.dumps(payload)
